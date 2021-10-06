@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cppcore.h>
+#include <protocol.h>
 
 struct ST_NETWORK_INFO : public core::IFormatterObject
 {
