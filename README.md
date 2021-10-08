@@ -11,6 +11,8 @@
     
   cppcore, protocol 등 외부에서 만든 라이브러리를 WSL Ubuntu에 /usr/local/lib로 옮겨야한다.
 
+    플랫폼의 환경에 맞는 라이브러리를 선택하여 사용한다.
+
   cf) visual studio 2019에서 리눅스 정적 라이브러리 연결 관련 오류가 존재한다고 한다.
     ```
     $ cp libprotocol.a /usr/local/lib
