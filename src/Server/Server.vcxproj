@@ -83,6 +83,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -93,6 +94,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -103,6 +105,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -113,6 +116,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -123,6 +127,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -133,6 +138,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -143,6 +149,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <OutDir>$(SolutionDir)..\Build\$(configuration)$(platform)</OutDir>
@@ -153,6 +160,7 @@
     </LibraryPath>
     <RemoteIntRelDir>$(RemoteProjectRelDir)/Output/$(configuration)$(platform)/$(projectName)</RemoteIntRelDir>
     <RemoteOutRelDir>$(RemoteProjectRelDir)/Build/$(configuration)$(platform)</RemoteOutRelDir>
+    <TargetName>server</TargetName>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
