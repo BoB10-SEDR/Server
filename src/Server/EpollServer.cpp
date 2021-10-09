@@ -39,13 +39,13 @@ int CEpollServer::Start(int requestCount)
 {
 	serverSocket = socket(PF_INET, SOCK_STREAM, 0);
 	if (serverSocket < 0)
-		throw EpollServerException("socket create fail");
+		throw CEpollServerException("socket create fail");
 
 	if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0)
-		throw EpollServerException("bind fail");
+		throw CEpollServerException("bind fail");
 
 	if (listen(serverSocket, requestCount) < 0)
-		throw EpollServerException("bind fail");
+		throw CEpollServerException("bind fail");
 
 	CEpollServer::PushEpoll(serverSocket, EPOLLIN);
 
@@ -72,7 +72,7 @@ int CEpollServer::Recv()
 		int eventCount = epoll_wait(epollFD, epollEvents, EPOLL_SIZE, timeout);
 
 		if (eventCount < 0)
-			throw EpollServerException("epoll_wait() error");
+			throw CEpollServerException("epoll_wait() error");
 
 		for (int i = 0; i < eventCount; i++)
 		{
@@ -89,7 +89,7 @@ int CEpollServer::Recv()
 				flags |= O_NONBLOCK;
 
 				if (fcntl(clientSocket, F_SETFL, flags) < 0)
-					throw EpollServerException("clientSocket fcntl() error");
+					throw CEpollServerException("clientSocket fcntl() error");
 
 				if (clientSocket < 0)
 				{
@@ -136,7 +136,7 @@ int CEpollServer::CreateEpoll()
 {
 	epollFD = epoll_create(EPOLL_SIZE);
 	if (epollFD < 0)
-		throw EpollServerException("CreateEpoll Fail");
+		throw CEpollServerException("CreateEpoll Fail");
 
 	epollEvents = (struct epoll_event*)malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
 	memset(epollEvents, 0, sizeof(struct epoll_event) * EPOLL_SIZE);
@@ -150,7 +150,7 @@ int CEpollServer::PushEpoll(int socket, int event)
 	epollEvent.data.fd = socket;
 	
 	if (epoll_ctl(epollFD, EPOLL_CTL_ADD, socket, &epollEvent) < 0)
-		throw EpollServerException("PushEpoll Fail");
+		throw CEpollServerException("PushEpoll Fail");
 
 	if (socket != serverSocket)
 	{
@@ -168,7 +168,7 @@ int CEpollServer::PopEpoll(int socket)
 		}
 	}
 	if (epoll_ctl(epollFD, EPOLL_CTL_DEL, socket, NULL) < 0)
-		throw EpollServerException("PopEpoll Fail");
+		throw CEpollServerException("PopEpoll Fail");
 	close(socket);
 	return 0;
 }
