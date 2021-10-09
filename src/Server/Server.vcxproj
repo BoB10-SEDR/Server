@@ -163,9 +163,11 @@
     <TargetName>server</TargetName>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="EpollServer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EpollServer.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
