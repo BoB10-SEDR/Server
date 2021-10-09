@@ -164,7 +164,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="EpollServer.cpp" />
-    <ClCompile Include="EpollServerException.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

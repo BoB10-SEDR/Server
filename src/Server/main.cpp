@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
 #include "EpollServer.h"
 #include <thread>
-//#include <exception>
-
 
 void SendTest(CEpollServer *server) {
 	while (true)

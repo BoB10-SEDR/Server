@@ -104,7 +104,7 @@ int CEpollServer::Recv()
 				int clientSocket = epollEvents[i].data.fd;
 				int messageLength;
 				char message[BUFFER_SIZE];
-
+				
 				messageLength = read(clientSocket, &message, BUFFER_SIZE);
 
 				if (messageLength <= 0)
@@ -114,6 +114,7 @@ int CEpollServer::Recv()
 				}
 				else
 				{
+					message[messageLength] = 0;
 					printf("Recv Data from [%d]\n", clientSocket);
 					printf("message : %s\n", message);
 				}
