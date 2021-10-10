@@ -1,31 +1,49 @@
 #pragma once
+#include <stdio.h>
+#include <cppcore.h>
 
-struct PACKET_SUPER
-{
-	int nID;
-	int nSize;
-	PACKET_SUPER(void)
-	{}
-	PACKET_SUPER(int id, int size)
-		: nID(id), nSize(size)
-	{}
+enum PacketTarget {
+    SERVER,
+    AGENT
 };
 
-struct REQ_LOGIN : public PACKET_SUPER
-{
-	char szName[21];
-	char szPass[21];
-	REQ_LOGIN(void)
-		: PACKET_SUPER(1, sizeof(*this))
-	{}
+enum PacketType {
+    RESPONSE,
+    REQUEST
 };
 
-struct CMD_LOGIN : public PACKET_SUPER
+enum PacketOpcode {
+    OPCODE1,
+    OPCODE2,
+    OPCODE3,
+    OPCODE4,
+    OPCODE5,
+};
+
+struct ST_PACKET_INFO : public core::IFormatterObject
 {
-	int nResult;	// 0:OK, 1:NOK
-	CMD_LOGIN(void)
-		: PACKET_SUPER(1, sizeof(*this))
-	{}
+    int source;
+    int destination;
+    int type;
+    int opcode;
+    std::tstring data;
+
+    ST_PACKET_INFO(void)
+    {}
+    ST_PACKET_INFO(int _source, int _destination, int _type, int _opcode, std::string _data)
+        : source(_source), destination(_destination), type(_type), opcode(_opcode), data(_data)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("Source"), source)
+            + core::sPair(TEXT("Destination"), destination)
+            + core::sPair(TEXT("Type"), type)
+            + core::sPair(TEXT("Opcode"), opcode)
+            + core::sPair(TEXT("data"), data)
+            ;
+    }
 };
 
 void test();

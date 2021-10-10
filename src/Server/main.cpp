@@ -16,12 +16,7 @@ void SendTest(CEpollServer *server) {
 		printf("Message : ");
 		fgets(message, BUFFER_SIZE, stdin);
 
-		ST_PACKET_INFO stPacketSend;
-		stPacketSend.source = SERVER;
-		stPacketSend.destination = AGENT;
-		stPacketSend.type = REQUEST;
-		stPacketSend.opcode = OPCODE1;
-		stPacketSend.data = message;
+		ST_PACKET_INFO stPacketSend(SERVER, AGENT, REQUEST, OPCODE1, message);
 
 		std::tstring jsPacketSend;
 		core::WriteJsonToString(&stPacketSend, jsPacketSend);
