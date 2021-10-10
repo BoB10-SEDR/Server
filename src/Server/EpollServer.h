@@ -8,6 +8,7 @@
 #include <sys/epoll.h>
 #include <map>
 #include "EpollServerException.h"
+#include "stdafx.h"
 
 #define EPOLL_SIZE 100
 #define BUFFER_SIZE 1024

@@ -98,6 +98,7 @@ int CEpollServer::Recv()
 				}
 
 				PushEpoll(clientSocket, EPOLLIN | EPOLLET);
+				printf("Client Connect [%d]\n", clientSocket);
 			}
 			else
 			{
@@ -115,8 +116,23 @@ int CEpollServer::Recv()
 				else
 				{
 					message[messageLength] = 0;
-					printf("Recv Data from [%d]\n", clientSocket);
-					printf("message : %s\n", message);
+
+					struct ST_PACKET_INFO stPacketRead;
+					core::ReadJsonFromString(&stPacketRead, message);
+					if (stPacketRead.destination == SERVER && stPacketRead.type == REQUEST)
+					{
+						tprintf(TEXT("RESQUEST OPCODE : %d\n"), stPacketRead.opcode);
+						tprintf(TEXT("RESQUEST DATA : %s\n"), stPacketRead.data.c_str());
+					}
+					else if (stPacketRead.destination == SERVER && stPacketRead.type == RESPONSE)
+					{
+						tprintf(TEXT("RESPONSE OPCODE : %d\n"), stPacketRead.opcode);
+						tprintf(TEXT("RESPONSE DATA : %s\n"), stPacketRead.data.c_str());
+					}
+					else 
+					{
+						tprintf(TEXT("The message format is incorrect.The message format is incorrect. : %s\n"), message);
+					}
 				}
 			}
 		}

@@ -11,10 +11,22 @@ void SendTest(CEpollServer *server) {
 		printf("DeviceID : ");
 		scanf("%d", &deviceID);
 
-		printf("Message : ");
-		scanf("%s", message);
+		while (getchar() != '\n');
 
-		server->Send(deviceID, message);
+		printf("Message : ");
+		fgets(message, BUFFER_SIZE, stdin);
+
+		ST_PACKET_INFO stPacketSend;
+		stPacketSend.source = SERVER;
+		stPacketSend.destination = AGENT;
+		stPacketSend.type = REQUEST;
+		stPacketSend.opcode = OPCODE1;
+		stPacketSend.data = message;
+
+		std::tstring jsPacketSend;
+		core::WriteJsonToString(&stPacketSend, jsPacketSend);
+
+		server->Send(deviceID, jsPacketSend);
 	}
 }
 
