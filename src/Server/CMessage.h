@@ -31,7 +31,7 @@ public:
 	static CMessage* GetInstance(void);
 	void Init();
 	void PushSendMessage(std::string agentInfo, PacketType type, PacketOpcode opcode, std::string message);	//보낼 메시지를 sendMessage에 큐에 추가
-	void PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo);	//보낼 메시지를 sendMessage에 큐에 추가
+	void PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo);	//받은 메시지를 receiveMessage에 큐에 추가
 };
 
 inline CMessage* MessageManager()
