@@ -163,11 +163,13 @@
     <TargetName>server</TargetName>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="CLogger.cpp" />
     <ClCompile Include="CMessage.cpp" />
     <ClCompile Include="CEpollServer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CLogger.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CEpollServer.h" />
     <ClInclude Include="EpollServerException.h" />
