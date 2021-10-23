@@ -1,3 +1,5 @@
+#include "stdafx.h"
+#include "CLogger.h"
 #include "CEpollServer.h"
 #include "CMessage.h"
 
@@ -38,31 +40,43 @@ CEpollServer::~CEpollServer()
 
 int CEpollServer::Start(int requestCount)
 {
+	LoggerManager()->Info("Start...........\n");
 	serverSocket = socket(PF_INET, SOCK_STREAM, 0);
+
 	if (serverSocket < 0)
-		throw CEpollServerException("socket create fail");
+	{
+		throw CEpollServerException("Socket Create Fail");
+	}
 
-	if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0)
-		throw CEpollServerException("bind fail");
+	while (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) 
+	{
+		sleep(5);
+		LoggerManager()->Error("Bind...........\n");
+	}
 
-	if (listen(serverSocket, requestCount) < 0)
-		throw CEpollServerException("bind fail");
+	while (listen(serverSocket, requestCount) < 0)
+	{
+		sleep(5);
+		LoggerManager()->Error("Listen...........\n");
+	}
 
-	CEpollServer::PushEpoll(serverSocket, EPOLLIN);
-
-	printf("server Start\n");
+	CEpollServer::PushEpoll(std::string("0.0.0.0")+std::string("12345"), serverSocket, EPOLLIN);
 
 	return 0;
 }
 
-int CEpollServer::Send(int deviceID, std::string message)
+int CEpollServer::Send(std::string agentInfo, std::string message)
 {
-	int clientSocket = SearchClient(deviceID);
-	if (clientSocket != -1) {
-		write(clientSocket, message.c_str(), message.length());
-		return 0;
+	int agentSocket = SearchAgent(agentInfo);
+
+	if (agentSocket <= 0)
+	{
+		LoggerManager()->Warn("Agent not found...........\n");
+		return -1;
 	}
-	return -1;
+
+	write(agentSocket, message.c_str(), message.length());
+	return 0;
 }
 
 int CEpollServer::Recv()
@@ -80,40 +94,41 @@ int CEpollServer::Recv()
 		{
 			if (epollEvents[i].data.fd == serverSocket)
 			{
-				int            clientSocket;
-				int            clientLength;
-				struct sockaddr_in    clientAddress;
+				int            agentSocket;
+				int            agentLength;
+				struct sockaddr_in    agentAddress;
 
-				clientLength = sizeof(clientAddress);
-				clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, (socklen_t*)&clientLength);
+				agentLength = sizeof(agentAddress);
+				agentSocket = accept(serverSocket, (struct sockaddr*)&agentAddress, (socklen_t*)&agentLength);
 
-				int flags = fcntl(clientSocket, F_GETFL);
+				int flags = fcntl(agentSocket, F_GETFL);
 				flags |= O_NONBLOCK;
 
-				if (fcntl(clientSocket, F_SETFL, flags) < 0)
-					throw CEpollServerException("clientSocket fcntl() error");
+				if (fcntl(agentSocket, F_SETFL, flags) < 0)
+					throw CEpollServerException("Agent Socket fcntl() error");
 
-				if (clientSocket < 0)
+				if (agentSocket < 0)
 				{
-					printf("accept() error [%d]\n", clientSocket);
+					LoggerManager()->Warn(StringFormatter("Agent Accept Error [%d]...........\n", agentSocket));
+					close(agentSocket);
 					continue;
 				}
 
-				PushEpoll(clientSocket, EPOLLIN | EPOLLET);
-				printf("Client Connect [%d]\n", clientSocket);
+				PushEpoll(ConvertAgentInfo(agentAddress), agentSocket, EPOLLIN | EPOLLET);
+				LoggerManager()->Info(StringFormatter("Agent Connect [%s] [%d]...........\n", SearchAgent(agentSocket).c_str(), agentSocket));
 			}
 			else
 			{
-				int clientSocket = epollEvents[i].data.fd;
+				int agentSocket = epollEvents[i].data.fd;
 				int messageLength;
 				char message[BUFFER_SIZE];
 
-				messageLength = read(clientSocket, &message, BUFFER_SIZE);
+				messageLength = read(agentSocket, &message, BUFFER_SIZE);
 
 				if (messageLength <= 0)
 				{
-					printf("Client Disconnect [%d]\n", clientSocket);
-					PopEpoll(clientSocket);
+					LoggerManager()->Info(StringFormatter("Agent Disconnect [%s] [%d]...........\n", SearchAgent(agentSocket).c_str(), agentSocket));
+					PopEpoll(agentSocket);
 				}
 				else
 				{
@@ -121,7 +136,7 @@ int CEpollServer::Recv()
 
 					ST_PACKET_INFO* stPacketRead = new ST_PACKET_INFO();
 					core::ReadJsonFromString(stPacketRead, message);
-					MessageManager()->PushReceiveMessage(clientSocket, stPacketRead);
+					MessageManager()->PushReceiveMessage(SearchAgent(agentSocket), stPacketRead);
 				}
 			}
 		}
@@ -130,17 +145,14 @@ int CEpollServer::Recv()
 
 int CEpollServer::End()
 {
-	clientLists.clear();
+	agentInfoKeyLists.clear();
+	agentSocketKeyLists.clear();
 	close(epollFD);
 	close(serverSocket);
-	delete epollEvents;
 	serverSocket = -1;
-	return 0;
-}
 
-int CEpollServer::Live()
-{
-	return serverSocket;
+	LoggerManager()->Info("Terminate...........\n");
+	return 0;
 }
 
 int CEpollServer::CreateEpoll()
@@ -154,45 +166,48 @@ int CEpollServer::CreateEpoll()
 	return 0;
 }
 
-int CEpollServer::PushEpoll(int socket, int event)
+int CEpollServer::PushEpoll(std::string agentInfo, int agentSocket, int event)
 {
 	struct epoll_event epollEvent;
 	epollEvent.events = event;
-	epollEvent.data.fd = socket;
+	epollEvent.data.fd = agentSocket;
 	
-	if (epoll_ctl(epollFD, EPOLL_CTL_ADD, socket, &epollEvent) < 0)
+	if (epoll_ctl(epollFD, EPOLL_CTL_ADD, agentSocket, &epollEvent) < 0)
 		throw CEpollServerException("PushEpoll Fail");
 
-	if (socket != serverSocket)
+	if (agentSocket != serverSocket && agentSocket != 0)
 	{
-		clientLists.insert(std::pair<int, int>(socket, socket));
+		agentInfoKeyLists.insert(std::pair<std::string, int>(agentInfo, agentSocket));
+		agentSocketKeyLists.insert(std::pair<int, std::string>(agentSocket, agentInfo));
 	}
+
 	return 0;
 }
 
-int CEpollServer::PopEpoll(int socket)
+int CEpollServer::PopEpoll(int agentSocket)
 {
-	for (auto client : clientLists) {
-		if (client.second == socket) {
-			clientLists.erase(client.first);
-			break;
-		}
-	}
-	if (epoll_ctl(epollFD, EPOLL_CTL_DEL, socket, NULL) < 0)
+	std::string agentInfo = SearchAgent(agentSocket);
+	
+	if (epoll_ctl(epollFD, EPOLL_CTL_DEL, agentSocket, NULL) < 0)
 		throw CEpollServerException("PopEpoll Fail");
-	close(socket);
+
+	close(agentSocket);
+
+	agentInfoKeyLists.erase(agentInfo);
+	agentSocketKeyLists.erase(agentSocket);
 	return 0;
 }
 
-int CEpollServer::SearchClient(int deviceID)
+int CEpollServer::SearchAgent(std::string agentInfo)
 {
-	int clientSocket = clientLists[deviceID];
+	int agentSocket = agentInfoKeyLists[agentInfo];
+	return agentSocket;
+}
 
-	if (clientSocket == 0)
-	{
-		return -1;
-	}
-	return clientSocket;
+std::string CEpollServer::SearchAgent(int agentSocket)
+{
+	std::string agentInfo = agentSocketKeyLists[agentSocket];
+	return agentInfo;
 }
 
 CEpollServer* CEpollServer::GetInstance()
@@ -211,4 +226,8 @@ CEpollServer* CEpollServer::GetInstance(std::string ip, std::string port)
 {
 	static CEpollServer instance(ip, port);
 	return &instance;
+}
+
+std::string CEpollServer::ConvertAgentInfo(struct sockaddr_in agentAddress) {
+	return inet_ntoa(agentAddress.sin_addr) + std::string(":") + std::to_string(ntohs(agentAddress.sin_port));
 }

@@ -19,7 +19,8 @@ private:
 	int serverSocket, epollFD;
 	struct sockaddr_in serverAddress;
 	struct epoll_event* epollEvents;
-	std::map<int, int> clientLists;
+	std::map<std::string, int> agentInfoKeyLists;
+	std::map<int, std::string> agentSocketKeyLists;
 
 	CEpollServer();
 	CEpollServer(std::string port);
@@ -27,9 +28,11 @@ private:
 	~CEpollServer();
 
 	int CreateEpoll();
-	int PushEpoll(int socket, int event);
-	int PopEpoll(int socket);
-	int SearchClient(int clientID);
+	int PushEpoll(std::string agentInfo, int agentSocket, int event);
+	int PopEpoll(int agentSocket);
+	int SearchAgent(std::string agentInfo);
+	std::string SearchAgent(int agentSocket);
+	std::string ConvertAgentInfo(struct sockaddr_in agentAddress);
 
 public:
 	static CEpollServer* GetInstance(void);
@@ -37,8 +40,7 @@ public:
 	static CEpollServer* GetInstance(std::string ip, std::string port);
 
 	int Start(int requestCount = 5);
-	int Send(int deviceID, std::string message);
-	int Live();
+	int Send(std::string deviceID, std::string message);
 	int Recv();
 	int End();
 };
