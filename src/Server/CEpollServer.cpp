@@ -59,7 +59,7 @@ int CEpollServer::Start(int requestCount)
 		LoggerManager()->Error("Listen...........\n");
 	}
 
-	CEpollServer::PushEpoll(std::string("0.0.0.0")+std::string("12345"), serverSocket, EPOLLIN);
+	CEpollServer::PushEpoll("", serverSocket, EPOLLIN);
 
 	return 0;
 }
