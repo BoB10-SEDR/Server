@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include <queue>
 #include <protocol.h>
 #include <mutex>
@@ -6,10 +7,10 @@
 
 struct ST_SERVER_PACKET_INFO
 {
-	int deviceID;
+	std::string agentInfo;
 	ST_PACKET_INFO* stPacketInfo;
 
-	ST_SERVER_PACKET_INFO(int deviceID_, ST_PACKET_INFO* stPacketInfo_) :deviceID(deviceID_), stPacketInfo(stPacketInfo_) {}
+	ST_SERVER_PACKET_INFO(std::string agentInfo_, ST_PACKET_INFO* stPacketInfo_) :agentInfo(agentInfo_), stPacketInfo(stPacketInfo_) {}
 };
 
 class CMessage
@@ -30,8 +31,8 @@ public:
 
 	static CMessage* GetInstance(void);
 	void Init();
-	void PushSendMessage(int deviceID, PacketType type, PacketOpcode opcode, std::string message);	//보낼 메시지를 sendMessage에 큐에 추가
-	void PushReceiveMessage(int deviceID, ST_PACKET_INFO* stPacketInfo);	//보낼 메시지를 sendMessage에 큐에 추가
+	void PushSendMessage(std::string agentInfo, PacketType type, PacketOpcode opcode, std::string message);	//보낼 메시지를 sendMessage에 큐에 추가
+	void PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo);	//보낼 메시지를 sendMessage에 큐에 추가
 };
 
 inline CMessage* MessageManager()

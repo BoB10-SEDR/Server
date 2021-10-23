@@ -1,3 +1,4 @@
+#include "CLogger.h"
 #include "CMessage.h"
 #include "CEpollServer.h"
 
@@ -12,6 +13,7 @@ CMessage::~CMessage()
 
 void CMessage::Init()
 {
+	LoggerManager()->Info("CMessage INIT");
 	ServerManager()->Start();
 	std::future<void> c = std::async(std::launch::async, &CMessage::MatchReceiveMessage, this);
 	std::future<void> b = std::async(std::launch::async, &CMessage::ReceiveMessage, this);
@@ -24,7 +26,7 @@ void CMessage::Init()
 
 void CMessage::SendMessage()
 {
-	printf("start SendMessage\n");
+	LoggerManager()->Info("Start SendMessage\n");
 	while (1) {
 		sleep(0);
 		std::lock_guard<std::mutex> lock_guard(sendMessagemutex);
@@ -37,36 +39,36 @@ void CMessage::SendMessage()
 
 		std::tstring jsPacketSend;
 		core::WriteJsonToString(stServerPacketInfo->stPacketInfo, jsPacketSend);
-
-		ServerManager()->Send(stServerPacketInfo->deviceID, jsPacketSend);
+		
+		ServerManager()->Send(stServerPacketInfo->agentInfo, jsPacketSend);
 	}
 }
 
 void CMessage::ReceiveMessage()
 {
-	printf("start ReceiveMessage\n");
+	LoggerManager()->Info("Start ReceiveMessage\n");
 	ServerManager()->Recv();
 }
 
-void CMessage::PushSendMessage(int deviceID, PacketType type, PacketOpcode opcode, std::string message)
+void CMessage::PushSendMessage(std::string agentInfo, PacketType type, PacketOpcode opcode, std::string message)
 {
 	sleep(0);
 	std::lock_guard<std::mutex> lock_guard(sendMessagemutex);
-	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(deviceID, new ST_PACKET_INFO(SERVER, AGENT, type, opcode, message));
+	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(agentInfo, new ST_PACKET_INFO(SERVER, AGENT, type, opcode, message));
 	sendMessage.push(stServerPacketInfo);
 }
 
-void CMessage::PushReceiveMessage(int deviceID, ST_PACKET_INFO* stPacketInfo)
+void CMessage::PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo)
 {
 	sleep(0);
 	std::lock_guard<std::mutex> lock_guard(receiveMessagemutex);
-	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(deviceID, stPacketInfo);
+	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(agentInfo, stPacketInfo);
 	receiveMessage.push(stServerPacketInfo);
 }
 
 void CMessage::MatchReceiveMessage()
 {
-	printf("start MatchReceiveMessage\n");
+	LoggerManager()->Info("Start MatchReceiveMessage\n");
 	std::future<void> result;
 
 	while (1)
@@ -79,23 +81,22 @@ void CMessage::MatchReceiveMessage()
 
 		ST_SERVER_PACKET_INFO* stServerPacketInfo = receiveMessage.front();
 		receiveMessage.pop();
-		printf("Match [%d] %d %d\n", receiveMessage.size(), stServerPacketInfo->deviceID, stServerPacketInfo->stPacketInfo->opcode);
 
 		switch (stServerPacketInfo->stPacketInfo->opcode) {
 		case OPCODE1:
-			printf("OPcode1 : %d %d %s\n", stServerPacketInfo->deviceID, stServerPacketInfo->stPacketInfo->opcode, stServerPacketInfo->stPacketInfo->data.c_str());
+			LoggerManager()->Info(StringFormatter("Opcode1 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
 			//result = std::async(std::launch::async, &CSample::Event1, sample);
 			break;
 		case OPCODE2:
-			printf("OPcode2 : %d %d %s\n", stServerPacketInfo->deviceID, stServerPacketInfo->stPacketInfo->opcode, stServerPacketInfo->stPacketInfo->data.c_str());
+			LoggerManager()->Info(StringFormatter("Opcode2 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
 			//result = std::async(std::launch::async, &CSample::Event2, sample);
 			break;
 		case OPCODE3:
-			printf("OPcode3 : %d %d %s\n", stServerPacketInfo->deviceID, stServerPacketInfo->stPacketInfo->opcode, stServerPacketInfo->stPacketInfo->data.c_str());
+			LoggerManager()->Info(StringFormatter("Opcode3 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
 			//result = std::async(std::launch::async, &CSample::Event3, sample, stServerPacketInfo->stPacketInfo->data.c_str());
 			break;
 		default:
-			printf("Message Error : %d %s", stServerPacketInfo->deviceID, stServerPacketInfo->stPacketInfo->data.c_str());
+			LoggerManager()->Error(stServerPacketInfo->stPacketInfo->data.c_str());
 			break;
 		}
 	}

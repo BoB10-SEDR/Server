@@ -12,32 +12,32 @@ CLogger::~CLogger()
 
 }
 
+void CLogger::Info(std::string message)
+{
+	spdlog::info(message);
+	logger->info(message);
+}
+
+void CLogger::Error(std::string message)
+{
+	spdlog::error(message);
+	logger->error(message);
+}
+
+void CLogger::Warn(std::string message)
+{
+	spdlog::warn(message);
+	logger->warn(message);
+}
+
+void CLogger::Critical(std::string message)
+{
+	spdlog::critical(message);
+	logger->critical(message);
+}
+
 CLogger* CLogger::GetInstance()
 {
 	static CLogger instance;
 	return &instance;
-}
-
-void CLogger::Info(std::string msg)
-{
-	spdlog::info(msg);
-	logger->info(msg);
-}
-
-void CLogger::Error(std::string msg)
-{
-	spdlog::error(msg);
-	logger->error(msg);
-}
-
-void CLogger::Warn(std::string msg)
-{
-	spdlog::warn(msg);
-	logger->warn(msg);
-}
-
-void CLogger::Critical(std::string msg)
-{
-	spdlog::critical(msg);
-	logger->critical(msg);
 }
