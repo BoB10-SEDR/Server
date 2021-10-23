@@ -172,7 +172,7 @@
     <ClInclude Include="CLogger.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CEpollServer.h" />
-    <ClInclude Include="EpollServerException.h" />
+    <ClInclude Include="CEpollServerException.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">

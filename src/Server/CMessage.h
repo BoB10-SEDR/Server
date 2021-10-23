@@ -1,7 +1,6 @@
 #pragma once
 #include "stdafx.h"
 #include <queue>
-#include <protocol.h>
 #include <mutex>
 #include <future>
 

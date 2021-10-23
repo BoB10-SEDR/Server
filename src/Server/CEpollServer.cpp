@@ -1,6 +1,5 @@
-#include "stdafx.h"
-#include "CLogger.h"
 #include "CEpollServer.h"
+#include "CEpollServerException.h"
 #include "CMessage.h"
 
 CEpollServer::CEpollServer()

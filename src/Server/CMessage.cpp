@@ -1,4 +1,3 @@
-#include "CLogger.h"
 #include "CMessage.h"
 #include "CEpollServer.h"
 
