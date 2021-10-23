@@ -21,20 +21,29 @@ private:
 	struct epoll_event* epollEvents;
 	std::map<int, int> clientLists;
 
+	CEpollServer();
+	CEpollServer(std::string port);
+	CEpollServer(std::string ip, std::string port);
+	~CEpollServer();
+
 	int CreateEpoll();
 	int PushEpoll(int socket, int event);
 	int PopEpoll(int socket);
 	int SearchClient(int clientID);
 
 public:
-	CEpollServer();
-	CEpollServer(std::string port);
-	CEpollServer(std::string ip, std::string port);
-	~CEpollServer();
+	static CEpollServer* GetInstance(void);
+	static CEpollServer* GetInstance(std::string port);
+	static CEpollServer* GetInstance(std::string ip, std::string port);
 
 	int Start(int requestCount = 5);
 	int Send(int deviceID, std::string message);
+	int Live();
 	int Recv();
 	int End();
 };
 
+inline CEpollServer* ServerManager()
+{
+	return CEpollServer::GetInstance("12345");
+}

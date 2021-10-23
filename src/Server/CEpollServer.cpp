@@ -1,4 +1,5 @@
-#include "EpollServer.h"
+#include "CEpollServer.h"
+#include "CMessage.h"
 
 CEpollServer::CEpollServer()
 {
@@ -67,8 +68,9 @@ int CEpollServer::Send(int deviceID, std::string message)
 int CEpollServer::Recv()
 {
 	int timeout = -1;
-	while (true)
+	while(1)
 	{
+		sleep(0);
 		int eventCount = epoll_wait(epollFD, epollEvents, EPOLL_SIZE, timeout);
 
 		if (eventCount < 0)
@@ -105,7 +107,7 @@ int CEpollServer::Recv()
 				int clientSocket = epollEvents[i].data.fd;
 				int messageLength;
 				char message[BUFFER_SIZE];
-				
+
 				messageLength = read(clientSocket, &message, BUFFER_SIZE);
 
 				if (messageLength <= 0)
@@ -117,22 +119,9 @@ int CEpollServer::Recv()
 				{
 					message[messageLength] = 0;
 
-					struct ST_PACKET_INFO stPacketRead;
-					core::ReadJsonFromString(&stPacketRead, message);
-					if (stPacketRead.destination == SERVER && stPacketRead.type == REQUEST)
-					{
-						tprintf(TEXT("RESQUEST OPCODE : %d\n"), stPacketRead.opcode);
-						tprintf(TEXT("RESQUEST DATA : %s\n"), stPacketRead.data.c_str());
-					}
-					else if (stPacketRead.destination == SERVER && stPacketRead.type == RESPONSE)
-					{
-						tprintf(TEXT("RESPONSE OPCODE : %d\n"), stPacketRead.opcode);
-						tprintf(TEXT("RESPONSE DATA : %s\n"), stPacketRead.data.c_str());
-					}
-					else 
-					{
-						tprintf(TEXT("The message format is incorrect.The message format is incorrect. : %s\n"), message);
-					}
+					ST_PACKET_INFO* stPacketRead = new ST_PACKET_INFO();
+					core::ReadJsonFromString(stPacketRead, message);
+					MessageManager()->PushReceiveMessage(clientSocket, stPacketRead);
 				}
 			}
 		}
@@ -142,10 +131,16 @@ int CEpollServer::Recv()
 int CEpollServer::End()
 {
 	clientLists.clear();
-	free(epollEvents);
 	close(epollFD);
 	close(serverSocket);
+	delete epollEvents;
+	serverSocket = -1;
 	return 0;
+}
+
+int CEpollServer::Live()
+{
+	return serverSocket;
 }
 
 int CEpollServer::CreateEpoll()
@@ -198,4 +193,22 @@ int CEpollServer::SearchClient(int deviceID)
 		return -1;
 	}
 	return clientSocket;
+}
+
+CEpollServer* CEpollServer::GetInstance()
+{
+	static CEpollServer instance;
+	return &instance;
+}
+
+CEpollServer* CEpollServer::GetInstance(std::string port)
+{
+	static CEpollServer instance(port);
+	return &instance;
+}
+
+CEpollServer* CEpollServer::GetInstance(std::string ip, std::string port)
+{
+	static CEpollServer instance(ip, port);
+	return &instance;
 }
