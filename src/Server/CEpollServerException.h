@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include "stdafx.h"
 #include <exception>
 
 class CEpollServerException : public std::exception
