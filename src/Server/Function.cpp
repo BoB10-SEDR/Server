@@ -86,12 +86,27 @@ void func::SaveModuleInfo(std::string agentInfo, std::string data)
 	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data));
 }
 
-void func::ActivatePolicy()
+void func::ActivatePolicy(std::string agentInfo, int idx, std::string name, std::string version)
 {
-
+	ST_POLICY_INFO* policyInfo = new ST_POLICY_INFO(idx, name, version);
+	std::tstring jsPolicyInfo;
+	core::WriteJsonToString(policyInfo, jsPolicyInfo);
+	MessageManager()->PushSendMessage(agentInfo, REQUEST, POLICY_ACTIVATE, jsPolicyInfo);
 }
 
-void func::InactivatePolicy()
+void func::InactivatePolicy(std::string agentInfo, int idx, std::string name, std::string version)
 {
+	ST_POLICY_INFO* policyInfo = new ST_POLICY_INFO(idx, name, version);
+	std::tstring jsPolicyInfo;
+	core::WriteJsonToString(policyInfo, jsPolicyInfo);
+	MessageManager()->PushSendMessage(agentInfo, REQUEST, POLICY_INACTIVATE, jsPolicyInfo);
+}
 
+void func::SavePolicyStatus(std::string agentInfo, std::string data)
+{
+	ST_POLICY_STATE* policyState = new ST_POLICY_STATE();
+	core::ReadJsonFromString(policyState, data);
+
+	//Save DataBase
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data));
 }

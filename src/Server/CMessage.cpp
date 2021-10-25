@@ -96,20 +96,22 @@ void CMessage::MatchReceiveMessage()
 			//result = std::async(std::launch::async, &CSample::Event3, sample, stServerPacketInfo->stPacketInfo->data.c_str());
 			break;
 		case PROCESS_LIST:
-			result = std::async(std::launch::async, func::SaveProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			result = std::async(std::launch::async, func::SaveProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case FD_LIST:
-			result = std::async(std::launch::async, func::SaveFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			result = std::async(std::launch::async, func::SaveFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case MONITOR_INFO:
-			result = std::async(std::launch::async, func::SaveMonitoringInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			result = std::async(std::launch::async, func::SaveMonitoringInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case DEVICE_INFO:
-			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case MODULE_INFO:
-			result = std::async(std::launch::async, func::SaveModuleInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			result = std::async(std::launch::async, func::SaveModuleInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
+		case POLICY_STATE:
+			result = std::async(std::launch::async, func::SavePolicyStatus, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 		default:
 			LoggerManager()->Error(stServerPacketInfo->stPacketInfo->data.c_str());
 			break;

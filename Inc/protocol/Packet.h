@@ -24,7 +24,9 @@ enum PacketOpcode {
     MONITOR_INACTIVATE,
     MONITOR_INFO,
     DEVICE_INFO,
-    MODULE_INFO
+    MODULE_INFO,
+    POLICY_ACTIVATE,
+    POLICY_INACTIVATE,
 };
 
 struct ST_PACKET_INFO : public core::IFormatterObject
@@ -245,6 +247,47 @@ struct ST_POLICY_INFO : public core::IFormatterObject
             + core::sPair(TEXT("Idx"), idx)
             + core::sPair(TEXT("Name"), name)
             + core::sPair(TEXT("Version"), version)
+            ;
+    }
+};
+
+struct ST_POLICY_RESULT : public core::IFormatterObject
+{
+    int idx;
+    bool result;
+    std::string time;
+
+
+    ST_POLICY_RESULT(void)
+    {}
+    ST_POLICY_RESULT(int _idx, bool _result, std::string _time)
+        : idx(_idx), result(_result), time(_time)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("Idx"), idx)
+            + core::sPair(TEXT("Result"), result)
+            + core::sPair(TEXT("Time"), time)
+            ;
+    }
+};
+
+struct ST_POLICY_STATE : public core::IFormatterObject
+{
+    std::vector<ST_POLICY_RESULT> stateLists;
+
+    ST_POLICY_STATE(void)
+    {}
+    ST_POLICY_STATE(std::vector<ST_POLICY_RESULT> _stateLists)
+        : stateLists(_stateLists)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("StateLists"), stateLists)
             ;
     }
 };

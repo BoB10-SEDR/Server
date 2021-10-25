@@ -14,6 +14,7 @@ namespace func
 	void SaveDeviceInfo(std::string agentInfo, std::string data);
 	void GetModuleInfo(std::string agentInfo);
 	void SaveModuleInfo(std::string agentInfo, std::string data);
-	void ActivatePolicy();
-	void InactivatePolicy();
+	void ActivatePolicy(std::string agentInfo, int idx, std::string name, std::string version);
+	void InactivatePolicy(std::string agentInfo, int idx, std::string name, std::string version);
+	void SavePolicyStatus(std::string agentInfo, std::string data);
 }
