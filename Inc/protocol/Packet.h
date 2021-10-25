@@ -137,7 +137,7 @@ struct ST_FD_LIST : public core::IFormatterObject
     }
 };
 
-struct ST_MONITOR_LIST : public core::IFormatterObject
+struct ST_MONITOR_LIST: public core::IFormatterObject
 {
     std::vector <std::string> pathLists;
 
@@ -206,7 +206,7 @@ struct ST_DEVICE_INFO : public core::IFormatterObject
 };
 
 struct ST_MODULE_INFO : public core::IFormatterObject
-{
+{    
     std::string deviceSerialNumber;
     std::string deviceMac;
     std::string name;
