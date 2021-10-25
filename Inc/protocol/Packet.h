@@ -27,6 +27,10 @@ enum PacketOpcode {
     MODULE_INFO,
     POLICY_ACTIVATE,
     POLICY_INACTIVATE,
+    POLICY_STATE,
+    CHECK_ACTIVATE,
+    CHECK_STATE,
+    MESSAGE
 };
 
 struct ST_PACKET_INFO : public core::IFormatterObject
@@ -133,7 +137,7 @@ struct ST_FD_LIST : public core::IFormatterObject
     }
 };
 
-struct ST_MONITOR_LIST: public core::IFormatterObject
+struct ST_MONITOR_LIST : public core::IFormatterObject
 {
     std::vector <std::string> pathLists;
 
@@ -202,7 +206,7 @@ struct ST_DEVICE_INFO : public core::IFormatterObject
 };
 
 struct ST_MODULE_INFO : public core::IFormatterObject
-{    
+{
     std::string deviceSerialNumber;
     std::string deviceMac;
     std::string name;
@@ -292,22 +296,71 @@ struct ST_POLICY_STATE : public core::IFormatterObject
     }
 };
 
-struct ST_MESSAGE : public core::IFormatterObject
+struct ST_CHECK_INFO : public core::IFormatterObject
 {
-    bool status;
-    std::string msg;
+    int idx;
+    std::string name;
+    int logID;
 
-    ST_MESSAGE(void)
+    ST_CHECK_INFO(void)
     {}
-    ST_MESSAGE(int _status, std::string _msg)
-        : status(_status), msg(_msg)
+    ST_CHECK_INFO(int _idx, std::string _name, int _logID)
+        : idx(_idx), name(_name), logID(_logID)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
+            + core::sPair(TEXT("Idx"), idx)
+            + core::sPair(TEXT("Name"), name)
+            + core::sPair(TEXT("LogID"), logID)
+            ;
+    }
+};
+
+struct ST_CHECK_RESULT : public core::IFormatterObject
+{
+    int logID;
+    int step;
+    bool result;
+    std::string time;
+
+
+    ST_CHECK_RESULT(void)
+    {}
+    ST_CHECK_RESULT(int _logID, int _step, bool _result, std::string _time)
+        : logID(_logID), step(_step), result(_result), time(_time)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("LogID"), logID)
+            + core::sPair(TEXT("Step"), step)
+            + core::sPair(TEXT("Result"), result)
+            + core::sPair(TEXT("Time"), time)
+            ;
+    }
+};
+
+struct ST_MESSAGE : public core::IFormatterObject
+{
+    int opcode;
+    bool status;
+    std::string data;
+
+    ST_MESSAGE(void)
+    {}
+    ST_MESSAGE(int _opcode, bool _status, std::string _data)
+        : opcode(_opcode), status(_status), data(_data)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("Opcode"), opcode)
             + core::sPair(TEXT("Status"), status)
-            + core::sPair(TEXT("Msg"), msg)
+            + core::sPair(TEXT("Data"), data)
             ;
     }
 };

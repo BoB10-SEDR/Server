@@ -17,4 +17,7 @@ namespace func
 	void ActivatePolicy(std::string agentInfo, int idx, std::string name, std::string version);
 	void InactivatePolicy(std::string agentInfo, int idx, std::string name, std::string version);
 	void SavePolicyStatus(std::string agentInfo, std::string data);
+	void ActivateCheck(std::string agentInfo, int idx, std::string name);
+	void SaveCheckStatus(std::string agentInfo, std::string data);
+	void SaveMessage(std::string agentInfo, std::string data);
 }

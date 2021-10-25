@@ -112,8 +112,15 @@ void CMessage::MatchReceiveMessage()
 			break;
 		case POLICY_STATE:
 			result = std::async(std::launch::async, func::SavePolicyStatus, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case CHECK_STATE:
+			result = std::async(std::launch::async, func::SaveCheckStatus, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case MESSAGE:
+			result = std::async(std::launch::async, func::SaveMessage, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
 		default:
-			LoggerManager()->Error(stServerPacketInfo->stPacketInfo->data.c_str());
+			LoggerManager()->Error(StringFormatter("Packet Type Error : %s", stServerPacketInfo->stPacketInfo->data.c_str()));
 			break;
 		}
 	}
