@@ -104,6 +104,12 @@ void CMessage::MatchReceiveMessage()
 		case MONITOR_INFO:
 			result = std::async(std::launch::async, func::SaveMonitoringInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
 			break;
+		case DEVICE_INFO:
+			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			break;
+		case MODULE_INFO:
+			result = std::async(std::launch::async, func::SaveModuleInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data.c_str());
+			break;
 		default:
 			LoggerManager()->Error(stServerPacketInfo->stPacketInfo->data.c_str());
 			break;

@@ -10,10 +10,10 @@ namespace func
 	void StartMonitoring(std::string agentInfo, std::vector<std::string> logLists);
 	void StopMonitoring(std::string agentInfo, std::vector<std::string> logLists);
 	void SaveMonitoringInfo(std::string agentInfo, std::string data);
-	void GetDeviceInfo();
-	void SaveDeviceInfo();
-	void GetModuleInfo();
-	void SaveModuleInfo();
+	void GetDeviceInfo(std::string agentInfo);
+	void SaveDeviceInfo(std::string agentInfo, std::string data);
+	void GetModuleInfo(std::string agentInfo);
+	void SaveModuleInfo(std::string agentInfo, std::string data);
 	void ActivatePolicy();
 	void InactivatePolicy();
 }

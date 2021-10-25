@@ -58,24 +58,32 @@ void func::SaveMonitoringInfo(std::string agentInfo, std::string data)
 	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data));
 }
 
-void func::GetDeviceInfo()
+void func::GetDeviceInfo(std::string agentInfo)
 {
-
+	MessageManager()->PushSendMessage(agentInfo, REQUEST, DEVICE_INFO, "");
 }
 
-void func::SaveDeviceInfo()
+void func::SaveDeviceInfo(std::string agentInfo, std::string data)
 {
+	ST_DEVICE_INFO* deviceInfo = new ST_DEVICE_INFO();
+	core::ReadJsonFromString(deviceInfo, data);
 
+	//Save DataBase
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data));
 }
 
-void func::GetModuleInfo()
+void func::GetModuleInfo(std::string agentInfo)
 {
-
+	MessageManager()->PushSendMessage(agentInfo, REQUEST, MODULE_INFO, "");
 }
 
-void func::SaveModuleInfo()
+void func::SaveModuleInfo(std::string agentInfo, std::string data)
 {
+	ST_MODULE_INFO* moduleInfo = new ST_MODULE_INFO();
+	core::ReadJsonFromString(moduleInfo, data);
 
+	//Save DataBase
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data));
 }
 
 void func::ActivatePolicy()
