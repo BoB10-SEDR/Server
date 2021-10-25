@@ -3,6 +3,7 @@
 
 void func::GetProcessList(std::string agentInfo)
 {
+	LoggerManager()->Info("Request GetProcessList");
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, PROCESS_LIST, "");
 }
 
@@ -17,6 +18,7 @@ void func::SaveProcessList(std::string agentInfo, std::string data)
 
 void func::GetFileDescriptorList(std::string agentInfo)
 {
+	LoggerManager()->Info("Request GetFileDescriptorList");
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, FD_LIST, "");
 }
 
@@ -31,21 +33,21 @@ void func::SaveFileDescriptorList(std::string agentInfo, std::string data)
 
 void func::StartMonitoring(std::string agentInfo, std::vector<std::string> logLists)
 {
+	LoggerManager()->Info("Request StartMonitoring");
 	ST_MONITOR_LIST* monitorList = new ST_MONITOR_LIST(logLists);
 	std::tstring jsMonitorList;
 	core::WriteJsonToString(monitorList, jsMonitorList);
 
-	//Save DataBase
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, MONITOR_ACTIVATE, jsMonitorList);
 }
 
 void func::StopMonitoring(std::string agentInfo, std::vector<std::string> logLists)
 {
+	LoggerManager()->Info("Request StopMonitoring");
 	ST_MONITOR_LIST* monitorList = new ST_MONITOR_LIST(logLists);
 	std::tstring jsMonitorList;
 	core::WriteJsonToString(monitorList, jsMonitorList);
 
-	//Save DataBase
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, MONITOR_INACTIVATE, jsMonitorList);
 }
 
@@ -60,6 +62,7 @@ void func::SaveMonitoringInfo(std::string agentInfo, std::string data)
 
 void func::GetDeviceInfo(std::string agentInfo)
 {
+	LoggerManager()->Info("Request GetDeviceInfo");
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, DEVICE_INFO, "");
 }
 
@@ -74,6 +77,7 @@ void func::SaveDeviceInfo(std::string agentInfo, std::string data)
 
 void func::GetModuleInfo(std::string agentInfo)
 {
+	LoggerManager()->Info("Request GetModuleInfo");
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, MODULE_INFO, "");
 }
 
@@ -82,12 +86,12 @@ void func::SaveModuleInfo(std::string agentInfo, std::string data)
 	ST_MODULE_INFO* moduleInfo = new ST_MODULE_INFO();
 	core::ReadJsonFromString(moduleInfo, data);
 
-	//Save DataBase
 	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
 }
 
 void func::ActivatePolicy(std::string agentInfo, int idx, std::string name, std::string version)
 {
+	LoggerManager()->Info("Request ActivatePolicy");
 	ST_POLICY_INFO* policyInfo = new ST_POLICY_INFO(idx, name, version);
 	std::tstring jsPolicyInfo;
 	core::WriteJsonToString(policyInfo, jsPolicyInfo);
@@ -96,6 +100,7 @@ void func::ActivatePolicy(std::string agentInfo, int idx, std::string name, std:
 
 void func::InactivatePolicy(std::string agentInfo, int idx, std::string name, std::string version)
 {
+	LoggerManager()->Info("Request InactivatePolicy");
 	ST_POLICY_INFO* policyInfo = new ST_POLICY_INFO(idx, name, version);
 	std::tstring jsPolicyInfo;
 	core::WriteJsonToString(policyInfo, jsPolicyInfo);
@@ -113,6 +118,7 @@ void func::SavePolicyStatus(std::string agentInfo, std::string data)
 
 void func::ActivateCheck(std::string agentInfo, int idx, std::string name)
 {
+	LoggerManager()->Info("Request ActivateCheck");
 	int logID;	//Create Database Data Result idx
 	ST_CHECK_INFO* checkInfo = new ST_CHECK_INFO(idx, name, logID);
 
@@ -140,5 +146,8 @@ void func::SaveMessage(std::string agentInfo, std::string data)
 
 	if (!message->status) {
 		LoggerManager()->Warn(StringFormatter("Error Command [%s] : %s", agentInfo, message->data.c_str()));
+	}
+	else {
+		LoggerManager()->Info(StringFormatter("Success Command [%s] : %s", agentInfo, message->data.c_str()));
 	}
 }
