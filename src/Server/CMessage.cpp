@@ -1,5 +1,6 @@
 #include "CMessage.h"
 #include "CEpollServer.h"
+#include "Function.h"
 
 CMessage::CMessage()
 {
@@ -93,6 +94,12 @@ void CMessage::MatchReceiveMessage()
 		case OPCODE3:
 			LoggerManager()->Info(StringFormatter("Opcode3 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
 			//result = std::async(std::launch::async, &CSample::Event3, sample, stServerPacketInfo->stPacketInfo->data.c_str());
+			break;
+		case PROCESS_LIST:
+			result = std::async(std::launch::async, func::SaveProcessList, stServerPacketInfo->stPacketInfo->data.c_str());
+			break;
+		case FD_LIST:
+			result = std::async(std::launch::async, func::SaveFileDescriptorList, stServerPacketInfo->stPacketInfo->data.c_str());
 			break;
 		default:
 			LoggerManager()->Error(stServerPacketInfo->stPacketInfo->data.c_str());
