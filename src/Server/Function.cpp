@@ -13,7 +13,7 @@ void func::SaveProcessList(std::string agentInfo, std::string data)
 	core::ReadJsonFromString(processList, data);
 
 	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::GetFileDescriptorList(std::string agentInfo)
@@ -28,7 +28,7 @@ void func::SaveFileDescriptorList(std::string agentInfo, std::string data)
 	core::ReadJsonFromString(fdLIST, data);
 
 	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::StartMonitoring(std::string agentInfo, std::vector<std::string> logLists)
@@ -57,7 +57,7 @@ void func::SaveMonitoringInfo(std::string agentInfo, std::string data)
 	core::ReadJsonFromString(monitorInfo, data);
 
 	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::GetDeviceInfo(std::string agentInfo)
@@ -72,7 +72,7 @@ void func::SaveDeviceInfo(std::string agentInfo, std::string data)
 	core::ReadJsonFromString(deviceInfo, data);
 
 	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::GetModuleInfo(std::string agentInfo)
@@ -86,7 +86,7 @@ void func::SaveModuleInfo(std::string agentInfo, std::string data)
 	ST_MODULE_INFO* moduleInfo = new ST_MODULE_INFO();
 	core::ReadJsonFromString(moduleInfo, data);
 
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::ActivatePolicy(std::string agentInfo, int idx, std::string name, std::string version)
@@ -113,7 +113,7 @@ void func::SavePolicyStatus(std::string agentInfo, std::string data)
 	core::ReadJsonFromString(policyState, data);
 
 	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::ActivateCheck(std::string agentInfo, int idx, std::string name)
@@ -133,7 +133,7 @@ void func::SaveCheckStatus(std::string agentInfo, std::string data)
 	core::ReadJsonFromString(checkResult, data);
 
 	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
+	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo.c_str(), data.c_str()));
 }
 
 void func::SaveMessage(std::string agentInfo, std::string data)
@@ -141,13 +141,10 @@ void func::SaveMessage(std::string agentInfo, std::string data)
 	ST_MESSAGE* message = new ST_MESSAGE();
 	core::ReadJsonFromString(message, data);
 
-	//Save DataBase
-	LoggerManager()->Info(StringFormatter("Save DataBase [%s] : %s", agentInfo, data.c_str()));
-
 	if (!message->status) {
-		LoggerManager()->Warn(StringFormatter("Error Command [%s] : %s", agentInfo, message->data.c_str()));
+		LoggerManager()->Warn(StringFormatter("Error Command [%s] : %s", agentInfo.c_str(), message->data.c_str()));
 	}
 	else {
-		LoggerManager()->Info(StringFormatter("Success Command [%s] : %s", agentInfo, message->data.c_str()));
+		LoggerManager()->Info(StringFormatter("Success Command [%s] : %s", agentInfo.c_str(), message->data.c_str()));
 	}
 }

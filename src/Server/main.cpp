@@ -22,6 +22,8 @@ void SendTest() {
 		scanf("%d", &select);
 		printf("opcode : %d\n", select);
 
+		while (getchar() != '\n');
+
 		switch (select)
 		{
 		case 1:
