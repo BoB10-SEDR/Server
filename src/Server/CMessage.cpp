@@ -1,5 +1,6 @@
 #include "CMessage.h"
 #include "CEpollServer.h"
+#include "Function.h"
 
 CMessage::CMessage()
 {
@@ -94,8 +95,32 @@ void CMessage::MatchReceiveMessage()
 			LoggerManager()->Info(StringFormatter("Opcode3 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
 			//result = std::async(std::launch::async, &CSample::Event3, sample, stServerPacketInfo->stPacketInfo->data.c_str());
 			break;
+		case PROCESS_LIST:
+			result = std::async(std::launch::async, func::SaveProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case FD_LIST:
+			result = std::async(std::launch::async, func::SaveFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case MONITOR_INFO:
+			result = std::async(std::launch::async, func::SaveMonitoringInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case DEVICE_INFO:
+			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case MODULE_INFO:
+			result = std::async(std::launch::async, func::SaveModuleInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case POLICY_STATE:
+			result = std::async(std::launch::async, func::SavePolicyStatus, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case CHECK_STATE:
+			result = std::async(std::launch::async, func::SaveCheckStatus, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case MESSAGE:
+			result = std::async(std::launch::async, func::SaveMessage, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
 		default:
-			LoggerManager()->Error(stServerPacketInfo->stPacketInfo->data.c_str());
+			LoggerManager()->Error(StringFormatter("Packet Type Error : %s", stServerPacketInfo->stPacketInfo->data.c_str()));
 			break;
 		}
 	}
