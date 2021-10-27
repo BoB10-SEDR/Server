@@ -168,6 +168,8 @@
     <ClCompile Include="CEpollServer.cpp" />
     <ClCompile Include="Function.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RestApiServer.cpp" />
+    <ClCompile Include="SampleRestApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLogger.h" />
@@ -175,94 +177,96 @@
     <ClInclude Include="CEpollServer.h" />
     <ClInclude Include="CEpollServerException.h" />
     <ClInclude Include="Function.h" />
+    <ClInclude Include="RestApiServer.h" />
+    <ClInclude Include="SampleRestApi.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
-      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
-      <CLanguageStandard>Default</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <CLanguageStandard>gnu11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
