@@ -12,7 +12,8 @@ CSampleRestApi::~CSampleRestApi()
 
 void CSampleRestApi::Routing(Pistache::Rest::Router& router)
 {
-    printf("Routing Complete\n");
+    core::Log_Debug(TEXT("SampleRestApi.cpp - [%s]"), TEXT("Routing Complete"));
+
     Pistache::Rest::Routes::Get(router, "/sample/:name", Pistache::Rest::Routes::bind(&CSampleRestApi::GetSampleRestApi, this));
     Pistache::Rest::Routes::Post(router, "/sample/:name/:value?", Pistache::Rest::Routes::bind(&CSampleRestApi::PostSampleRestApi, this));
     Pistache::Rest::Routes::Put(router, "/sample/:name/:value?", Pistache::Rest::Routes::bind(&CSampleRestApi::PutSampleRestApi, this));
@@ -21,7 +22,7 @@ void CSampleRestApi::Routing(Pistache::Rest::Router& router)
 
 void CSampleRestApi::GetSampleRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    printf("Start GetSampleRestApi\n");
+    core::Log_Debug(TEXT("SampleRestApi.cpp - [%s]"), TEXT("GetSampleRestApi"));
 
     auto name = request.param(":name").as<std::string>();
 
@@ -45,7 +46,8 @@ void CSampleRestApi::GetSampleRestApi(const Pistache::Rest::Request& request, Pi
 
 void CSampleRestApi::PostSampleRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    printf("Start PostSampleRestApi\n");
+    core::Log_Debug(TEXT("SampleRestApi.cpp - [%s]"), TEXT("PostSampleRestApi"));
+
     auto name = request.param(":name").as<std::string>();
 
     std::lock_guard<std::mutex> guard(sampleInfosLock);
@@ -76,7 +78,8 @@ void CSampleRestApi::PostSampleRestApi(const Pistache::Rest::Request& request, P
 
 void CSampleRestApi::PutSampleRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    printf("Start PutSampleRestApi\n");
+    core::Log_Debug(TEXT("SampleRestApi.cpp - [%s]"), TEXT("PutSampleRestApi"));
+
     auto name = request.param(":name").as<std::string>();
 
     std::lock_guard<std::mutex> guard(sampleInfosLock);
@@ -107,7 +110,8 @@ void CSampleRestApi::PutSampleRestApi(const Pistache::Rest::Request& request, Pi
 
 void CSampleRestApi::DeleteSampleRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    printf("Start DeleteSampleRestApi\n");
+    core::Log_Debug(TEXT("SampleRestApi.cpp - [%s]"), TEXT("DeleteSampleRestApi"));
+
     auto name = request.param(":name").as<std::string>();
 
     std::lock_guard<std::mutex> guard(sampleInfosLock);
