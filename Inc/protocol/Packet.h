@@ -62,19 +62,27 @@ struct ST_PACKET_INFO : public core::IFormatterObject
 struct ST_PROCESS_INFO : public core::IFormatterObject
 {
     int pid;
-    std::string command;
+    int ppid;
+    std::string name;
+    std::string state;
+    std::string cmdline;
+    std::string startTime;
 
     ST_PROCESS_INFO(void)
     {}
-    ST_PROCESS_INFO(int _pid, std::string _command)
-        : pid(_pid), command(_command)
+    ST_PROCESS_INFO(int _pid, int _ppid, std::string _name, std::string _state, std::string _cmdline, std::string _startTime)
+        : pid(_pid), ppid(_ppid), name(_name), state(_state), cmdline(_cmdline), startTime(_startTime)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
             + core::sPair(TEXT("Pid"), pid)
-            + core::sPair(TEXT("Command"), command)
+            + core::sPair(TEXT("PPid"), ppid)
+            + core::sPair(TEXT("Name"), name)
+            + core::sPair(TEXT("State"), state)
+            + core::sPair(TEXT("Cmdline"), cmdline)
+            + core::sPair(TEXT("StartTime"), startTime)
             ;
     }
 };
@@ -100,20 +108,20 @@ struct ST_PROCESS_LIST : public core::IFormatterObject
 struct ST_FD_INFO : public core::IFormatterObject
 {
     int pid;
-    std::string command;
+    std::string name;
     std::string path;
 
     ST_FD_INFO(void)
     {}
-    ST_FD_INFO(int _pid, std::string _command, std::string _path)
-        : pid(_pid), command(_command), path(_path)
+    ST_FD_INFO(int _pid, std::string _name, std::string _path)
+        : pid(_pid), name(_name), path(_path)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
             + core::sPair(TEXT("Pid"), pid)
-            + core::sPair(TEXT("Command"), command)
+            + core::sPair(TEXT("Name"), name)
             + core::sPair(TEXT("Path"), path)
             ;
     }
@@ -121,23 +129,25 @@ struct ST_FD_INFO : public core::IFormatterObject
 
 struct ST_FD_LIST : public core::IFormatterObject
 {
+    int pid;
     std::vector<ST_FD_INFO> fdLists;
 
     ST_FD_LIST(void)
     {}
-    ST_FD_LIST(std::vector<ST_FD_INFO> _fdLists)
-        : fdLists(_fdLists)
+    ST_FD_LIST(int _pid, std::vector<ST_FD_INFO> _fdLists)
+        : pid(_pid), fdLists(_fdLists)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
+            + core::sPair(TEXT("Pid"), pid)
             + core::sPair(TEXT("FdLists"), fdLists)
             ;
     }
 };
 
-struct ST_MONITOR_LIST: public core::IFormatterObject
+struct ST_MONITOR_LIST : public core::IFormatterObject
 {
     std::vector <std::string> pathLists;
 
@@ -206,7 +216,7 @@ struct ST_DEVICE_INFO : public core::IFormatterObject
 };
 
 struct ST_MODULE_INFO : public core::IFormatterObject
-{    
+{
     std::string deviceSerialNumber;
     std::string deviceMac;
     std::string name;

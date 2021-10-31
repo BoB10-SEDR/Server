@@ -10,12 +10,18 @@ void SendTest() {
 	{
 		sleep(0);
 		char agentInfo[BUFFER_SIZE];
+		char path[BUFFER_SIZE];
+
 		int select;
-		std::vector<std::string> logLists;
-		logLists.push_back("/path/logs/1");
-		logLists.push_back("/path/logs/2");
-		logLists.push_back("/path/logs/3");
+		std::vector<std::string> logActiveLists;
+		/*logActiveLists.push_back("/var/log/nginx/access.log");
+		logActiveLists.push_back("/var/log/nginx/error.log");
+		*/logActiveLists.push_back("/var/log/auth.log");
 		
+		std::vector<std::string> logInactiveLists;
+		logInactiveLists.push_back("/home/npclown/test1/test1.txt");
+		logInactiveLists.push_back("/home/npclown/test/test2.txt");
+
 		printf("Agent : ");
 		fgets(agentInfo, BUFFER_SIZE, stdin);
 		*(agentInfo + (strlen(agentInfo) - 1)) = 0;
@@ -23,7 +29,6 @@ void SendTest() {
 		printf("Opcode : ");
 		scanf("%d", &select);
 		printf("opcode : %d\n", select);
-
 		while (getchar() != '\n');
 
 		switch (select)
@@ -32,13 +37,13 @@ void SendTest() {
 			func::GetProcessList(agentInfo);
 			break;
 		case 2:
-			func::GetFileDescriptorList(agentInfo);
+			func::GetFileDescriptorList(agentInfo, "1");
 			break;
 		case 3:
-			func::StartMonitoring(agentInfo, logLists);
+			func::StartMonitoring(agentInfo, logActiveLists);
 			break;
 		case 4:
-			func::StopMonitoring(agentInfo, logLists);
+			func::StopMonitoring(agentInfo, logInactiveLists);
 			break;
 		case 5:
 			func::GetDeviceInfo(agentInfo);
@@ -61,12 +66,37 @@ void SendTest() {
 	}
 }
 
+void SetLogger(std::string name, DWORD inputOption)
+{
+	std::tstring strModuleFile = core::GetFileName();
+	std::tstring strModuleDir = core::ExtractDirectory(strModuleFile);
+	std::tstring strModuleName = core::ExtractFileNameWithoutExt(strModuleFile);
+	std::tstring strLogFile = strModuleDir + TEXT("/") + strModuleName + TEXT(".log");
+
+	core::ST_LOG_INIT_PARAM_EX init;
+	init.strLogFile = strLogFile;
+	init.strID = TEXT(name);
+	init.dwInputFlag = inputOption;
+	init.dwOutputFlag = core::LOG_OUTPUT_FILE | core::LOG_OUTPUT_CONSOLE | core::LOG_OUTPUT_DBGWND;
+	init.dwMaxFileSize = 10 * 1000 * 1000;
+	init.dwMaxFileCount = 10;
+	init.nLogRotation = core::LOG_ROTATION_SIZE;
+	core::InitLog(init);
+}
+
 int main(int argc, char* argv[])
 {
+#ifdef DEBUG
+	SetLogger("TEST", core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR | core::LOG_DEBUG);
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Program is Debug Mode"));
+#else
+	SetLogger("TEST", core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR);
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Program is Release Mode"));
+#endif
+	
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Start Server Program!"));
 	try
 	{
-		LoggerManager()->Info("Start Server Program!");
-
 		std::future<void> a = std::async(std::launch::async, &CMessage::Init, MessageManager());
 		std::future<void> b = std::async(std::launch::async, &SendTest);
 
@@ -94,9 +124,9 @@ int main(int argc, char* argv[])
 	}
 	catch (std::exception& e)
 	{
-		LoggerManager()->Error(e.what());
+		core::Log_Error(TEXT("main.cpp - [%s]"), TEXT(e.what()));
 	}
-	LoggerManager()->Info("Terminate server Program!");
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Terminate Agent Program!"));
 
 	return 0;
 }

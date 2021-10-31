@@ -163,7 +163,6 @@
     <TargetName>server</TargetName>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="CLogger.cpp" />
     <ClCompile Include="CMessage.cpp" />
     <ClCompile Include="CEpollServer.cpp" />
     <ClCompile Include="Function.cpp" />
@@ -172,10 +171,8 @@
     <ClCompile Include="SampleRestApi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CLogger.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CEpollServer.h" />
-    <ClInclude Include="CEpollServerException.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="RestApiServer.h" />
     <ClInclude Include="SampleRestApi.h" />
@@ -186,10 +183,11 @@
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <CLanguageStandard>gnu11</CLanguageStandard>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>cppcore;protocol;dl;pthread;pistache</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -208,10 +206,11 @@
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <CLanguageStandard>gnu11</CLanguageStandard>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>cppcore;protocol;dl;pthread;pistache</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -230,10 +229,11 @@
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <CLanguageStandard>gnu11</CLanguageStandard>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>cppcore;protocol;dl;pthread;pistache</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -252,10 +252,11 @@
       <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);$(SolutionDir)../Inc;$(RemoteRootDir)/../BoB10_SEDR/$(ProjectName)/Inc</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++17</CppLanguageStandard>
       <CLanguageStandard>gnu11</CLanguageStandard>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>cppcore;protocol;dl;pthread;pistache</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">

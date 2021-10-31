@@ -9,6 +9,7 @@ void CRestApiServer::Init(size_t thr)
 
 void CRestApiServer::Start()
 {
+	core::Log_Debug(TEXT("RestApiServer.cpp : %s"), TEXT("Working RestAPI In Thread"));
 	httpEndpoint->setHandler(router.handler());
 	httpEndpoint->serve();
 }

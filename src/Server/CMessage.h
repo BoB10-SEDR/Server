@@ -6,10 +6,10 @@
 
 struct ST_SERVER_PACKET_INFO
 {
-	std::string agentInfo;
+	std::tstring agentInfo;
 	ST_PACKET_INFO* stPacketInfo;
 
-	ST_SERVER_PACKET_INFO(std::string agentInfo_, ST_PACKET_INFO* stPacketInfo_) :agentInfo(agentInfo_), stPacketInfo(stPacketInfo_) {}
+	ST_SERVER_PACKET_INFO(std::tstring agentInfo_, ST_PACKET_INFO* stPacketInfo_) :agentInfo(agentInfo_), stPacketInfo(stPacketInfo_) {}
 };
 
 class CMessage
@@ -17,8 +17,8 @@ class CMessage
 private:
 	std::queue<ST_SERVER_PACKET_INFO*> receiveMessage;
 	std::queue<ST_SERVER_PACKET_INFO*> sendMessage;
-	std::mutex receiveMessagemutex;
-	std::mutex sendMessagemutex;
+	std::mutex receiveMessageMutex;
+	std::mutex sendMessageMutex;
 
 	CMessage();
 
@@ -30,8 +30,8 @@ public:
 
 	static CMessage* GetInstance(void);
 	void Init();
-	void PushSendMessage(std::string agentInfo, PacketType type, PacketOpcode opcode, std::string message);	//보낼 메시지를 sendMessage에 큐에 추가
-	void PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo);	//받은 메시지를 receiveMessage에 큐에 추가
+	void PushSendMessage(std::tstring agentInfo, PacketType type, PacketOpcode opcode, std::tstring message);	//보낼 메시지를 sendMessage에 큐에 추가
+	void PushReceiveMessage(std::tstring agentInfo, ST_PACKET_INFO* stPacketInfo);	//받은 메시지를 receiveMessage에 큐에 추가
 };
 
 inline CMessage* MessageManager()
