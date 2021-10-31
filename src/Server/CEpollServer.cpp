@@ -150,17 +150,18 @@ int CEpollServer::Recv()
 
 						while (1)
 						{
-							size_t location = agentMessageBuffers[agentSocket].find("END");
-							core::Log_Debug(TEXT("CEpollServer.cpp - [%s] : %d"), TEXT("Find End Position"), location);
+							size_t start_location = agentMessageBuffers[agentSocket].find("BOBSTART");
+							size_t end_location = agentMessageBuffers[agentSocket].find("BOBEND");
+							core::Log_Debug(TEXT("CEpollServer.cpp - [%s] : %d, %d"), TEXT("Find Position(Start, End)"), start_location, end_location);
 
-							if (location == -1)
+							if (start_location == -1 || end_location == -1)
 								break;
 
 							ST_PACKET_INFO* stPacketRead = new ST_PACKET_INFO();
-							core::ReadJsonFromString(stPacketRead, agentMessageBuffers[agentSocket].substr(0, location));
+							core::ReadJsonFromString(stPacketRead, agentMessageBuffers[agentSocket].substr(start_location + 8, end_location - (start_location + 8)));
 
 							MessageManager()->PushReceiveMessage(SearchAgent(agentSocket), stPacketRead);
-							agentMessageBuffers[agentSocket] = agentMessageBuffers[agentSocket].substr(location + 3);
+							agentMessageBuffers[agentSocket] = agentMessageBuffers[agentSocket].substr(end_location + 6);
 						}
 					}
 					message[0] = 0;
