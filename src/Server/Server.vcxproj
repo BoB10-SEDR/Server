@@ -189,7 +189,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -212,7 +212,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -235,7 +235,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -258,7 +258,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">

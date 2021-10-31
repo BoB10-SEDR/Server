@@ -2,21 +2,20 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="dbconnection.h">
-      <Filter>source</Filter>
-    </ClInclude>
+    <ClInclude Include="CMessage.h" />
+    <ClInclude Include="CEpollServer.h" />
+    <ClInclude Include="Function.h" />
+    <ClInclude Include="RestApiServer.h" />
+    <ClInclude Include="SampleRestApi.h" />
+    <ClInclude Include="dbconnection.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="source">
-      <UniqueIdentifier>{261067a3-2613-4cfe-9a66-489380f5dc10}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="dbconnection.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
+    <ClCompile Include="CMessage.cpp" />
+    <ClCompile Include="CEpollServer.cpp" />
+    <ClCompile Include="Function.cpp" />
+    <ClCompile Include="RestApiServer.cpp" />
+    <ClCompile Include="SampleRestApi.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="dbconnection.cpp" />
   </ItemGroup>
 </Project>
