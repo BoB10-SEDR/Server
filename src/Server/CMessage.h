@@ -21,13 +21,12 @@ private:
 	std::mutex sendMessageMutex;
 
 	CMessage();
+	~CMessage();
 
 	void ReceiveMessage();	//에이전트에서 받은 메시지를 수신하는 기능
 	void SendMessage();		//에이전트로 메시지를 보내는 기능
 	void MatchReceiveMessage();	//수신 메시지큐에서 메시지를 읽어, 서버의 특정 기능과 매칭 시켜주는 기능
 public:
-	~CMessage();
-
 	static CMessage* GetInstance(void);
 	void Init();
 	void PushSendMessage(std::tstring agentInfo, PacketType type, PacketOpcode opcode, std::tstring message);	//보낼 메시지를 sendMessage에 큐에 추가

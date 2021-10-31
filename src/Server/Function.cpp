@@ -1,14 +1,14 @@
 #include "Function.h"
 #include "CMessage.h"
 
-void func::GetProcessList(std::tstring agentInfo)
+void func::RequestProcessList(std::tstring agentInfo)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Process List"), TEXT(agentInfo.c_str()));
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, PROCESS_LIST, "");
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Process List Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::SaveProcessList(std::tstring agentInfo, std::tstring data)
+void func::ResponseProcessList(std::tstring agentInfo, std::tstring data)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process List"), TEXT(agentInfo.c_str()));
 
@@ -32,14 +32,14 @@ void func::SaveProcessList(std::tstring agentInfo, std::tstring data)
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process List Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::GetFileDescriptorList(std::tstring agentInfo, std::tstring pid)
+void func::RequestFileDescriptorList(std::tstring agentInfo, std::tstring pid)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Process File Descriptor List"), TEXT(agentInfo.c_str()));
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, FD_LIST, pid);
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Process File Descriptor List Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::SaveFileDescriptorList(std::tstring agentInfo, std::tstring data)
+void func::ResponseFileDescriptorList(std::tstring agentInfo, std::tstring data)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process File Descriptor List"), TEXT(agentInfo.c_str()));
 
@@ -51,8 +51,8 @@ void func::SaveFileDescriptorList(std::tstring agentInfo, std::tstring data)
 	for (auto i : fdLIST.fdLists)
 	{
 		core::Log_Debug(TEXT("Function.cpp - [PID] : %d"), i.pid);
-		core::Log_Debug(TEXT("Function.cpp - [Name] : %s"), TEXT(i.name.c_str()));
-		core::Log_Debug(TEXT("Function.cpp - [Path] : %s"), TEXT(i.path.c_str()));
+		core::Log_Debug(TEXT("Function.cpp - [FdName] : %s"), TEXT(i.fdName.c_str()));
+		core::Log_Debug(TEXT("Function.cpp - [RealPath] : %s"), TEXT(i.realPath.c_str()));
 	}
 #endif
 
@@ -61,33 +61,47 @@ void func::SaveFileDescriptorList(std::tstring agentInfo, std::tstring data)
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process List Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::StartMonitoring(std::tstring agentInfo, std::vector<std::tstring> logLists)
+void func::RequestStartMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Monitoring Target Added"), TEXT(agentInfo.c_str()));
 
 	ST_MONITOR_LIST monitorList;
-	monitorList.pathLists = logLists;
+	monitorList.targetLists = targetLists;
 
 	std::tstring jsMonitorList;
 	core::WriteJsonToString(&monitorList, jsMonitorList);
-	MessageManager()->PushSendMessage(agentInfo, REQUEST, MONITOR_ACTIVATE, jsMonitorList);
+	MessageManager()->PushSendMessage(agentInfo, REQUEST, MONITOR_ADD, jsMonitorList);
 
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Monitoring Target Added Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::StopMonitoring(std::tstring agentInfo, std::vector<std::tstring> logLists)
+void func::RequestStopMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Monitoring Target Removed"), TEXT(agentInfo.c_str()));
 
 	ST_MONITOR_LIST monitorList;
+	monitorList.targetLists = targetLists;
+
 	std::tstring jsMonitorList;
 	core::WriteJsonToString(&monitorList, jsMonitorList);
 
-	MessageManager()->PushSendMessage(agentInfo, REQUEST, MONITOR_INACTIVATE, jsMonitorList);
+	MessageManager()->PushSendMessage(agentInfo, REQUEST, MONITOR_REMOVE, jsMonitorList);
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Monitoring Target Removed Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::SaveMonitoringInfo(std::tstring agentInfo, std::tstring data)
+void func::ResponseMonitoringResult(std::tstring agentInfo, std::tstring data)
+{
+	core::Log_Info(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Response Monitoring Result"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
+
+	ST_MONITOR_RESULT monitorResult;
+	core::ReadJsonFromString(&monitorResult, data);
+
+	//Save DataBase
+	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
+	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Monitoring Result Complete"), TEXT(agentInfo.c_str()));
+}
+
+void func::ResponseMonitoringLog(std::tstring agentInfo, std::tstring data)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Request Monitoring Info"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
 

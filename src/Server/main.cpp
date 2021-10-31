@@ -5,6 +5,8 @@
 #include <algorithm>
 #include "RestApiServer.h"
 
+ST_ENV env;
+
 void SendTest() {
 	while (true)
 	{
@@ -13,14 +15,14 @@ void SendTest() {
 		char path[BUFFER_SIZE];
 
 		int select;
-		std::vector<std::string> logActiveLists;
+		std::vector<ST_MONITOR_TARGET> logActiveLists;
 		/*logActiveLists.push_back("/var/log/nginx/access.log");
 		logActiveLists.push_back("/var/log/nginx/error.log");
-		*/logActiveLists.push_back("/var/log/auth.log");
+		*/
+		logActiveLists.push_back(ST_MONITOR_TARGET("ssh","/var/log/auth.log"));
 
-		std::vector<std::string> logInactiveLists;
-		logInactiveLists.push_back("/home/npclown/test1/test1.txt");
-		logInactiveLists.push_back("/home/npclown/test/test2.txt");
+		std::vector<ST_MONITOR_TARGET> logInactiveLists;
+		logInactiveLists.push_back(ST_MONITOR_TARGET("ssh", "/var/log/auth.log"));
 
 		printf("Agent : ");
 		fgets(agentInfo, BUFFER_SIZE, stdin);
@@ -34,16 +36,16 @@ void SendTest() {
 		switch (select)
 		{
 		case 1:
-			func::GetProcessList(agentInfo);
+			func::RequestProcessList(agentInfo);
 			break;
 		case 2:
-			func::GetFileDescriptorList(agentInfo, "1");
+			func::RequestFileDescriptorList(agentInfo, "1");
 			break;
 		case 3:
-			func::StartMonitoring(agentInfo, logActiveLists);
+			func::RequestStartMonitoring(agentInfo, logActiveLists);
 			break;
 		case 4:
-			func::StopMonitoring(agentInfo, logInactiveLists);
+			func::RequestStopMonitoring(agentInfo, logInactiveLists);
 			break;
 		case 5:
 			func::GetDeviceInfo(agentInfo);
@@ -86,11 +88,22 @@ void SetLogger(std::string name, DWORD inputOption)
 
 int main(int argc, char* argv[])
 {
+	if (argc != 5) {
+		printf("syntax : ./server.out <socket port> <restapi port> <restapi thread count> <logger name>\n");
+		printf("sample : ./server.out 12345 9080 2 logger-test\n");
+		return -1;
+	}
+
+	env.socketPort = argv[1];
+	env.apiPort = argv[2];
+	env.thr = argv[3];
+	env.loggerName = argv[4];
+
 #ifdef _DEBUG
-	SetLogger("TEST", core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR | core::LOG_DEBUG);
+	SetLogger(env.loggerName, core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR | core::LOG_DEBUG);
 	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Program is Debug Mode"));
 #else
-	SetLogger("TEST", core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR);
+	SetLogger(env.loggerName, core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR);
 	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Program is Release Mode"));
 #endif
 
@@ -100,17 +113,9 @@ int main(int argc, char* argv[])
 		std::future<void> a = std::async(std::launch::async, &CMessage::Init, MessageManager());
 		std::future<void> b = std::async(std::launch::async, &SendTest);
 
-		Pistache::Port port(9080);
+		Pistache::Port port(static_cast<uint16_t>(std::stol(env.apiPort)));
 
-		int thr = 2;
-
-		if (argc >= 2)
-		{
-			port = static_cast<uint16_t>(std::stol(argv[1]));
-
-			if (argc == 3)
-				thr = std::stoi(argv[2]);
-		}
+		int thr = std::stoi(env.thr);
 
 		Pistache::Address addr(Pistache::Ipv4::any(), port);
 

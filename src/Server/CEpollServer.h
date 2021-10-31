@@ -45,5 +45,5 @@ public:
 
 inline CEpollServer* ServerManager()
 {
-	return CEpollServer::GetInstance("12345");
+	return CEpollServer::GetInstance();
 }

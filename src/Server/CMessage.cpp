@@ -62,7 +62,7 @@ void CMessage::PushSendMessage(std::tstring agentInfo, PacketType type, PacketOp
 	sendMessage.push(stServerPacketInfo);
 }
 
-void CMessage::PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo)
+void CMessage::PushReceiveMessage(std::tstring agentInfo, ST_PACKET_INFO* stPacketInfo)
 {
 	sleep(0);
 	std::lock_guard<std::mutex> lock_guard(receiveMessageMutex);
@@ -91,13 +91,16 @@ void CMessage::MatchReceiveMessage()
 
 		switch (stServerPacketInfo->stPacketInfo->opcode) {
 		case PROCESS_LIST:
-			result = std::async(std::launch::async, func::SaveProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case FD_LIST:
-			result = std::async(std::launch::async, func::SaveFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case MONITOR_RESULT:
+			result = std::async(std::launch::async, func::ResponseMonitoringResult, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case MONITOR_INFO:
-			result = std::async(std::launch::async, func::SaveMonitoringInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseMonitoringLog, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case DEVICE_INFO:
 			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);

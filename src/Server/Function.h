@@ -3,13 +3,14 @@
 
 namespace func
 {
-	void GetProcessList(std::tstring agentInfo);
-	void SaveProcessList(std::tstring agentInfo, std::tstring data);
-	void GetFileDescriptorList(std::tstring agentInfo, std::tstring pid);
-	void SaveFileDescriptorList(std::tstring agentInfo, std::tstring data);
-	void StartMonitoring(std::tstring agentInfo, std::vector<std::tstring> logLists);
-	void StopMonitoring(std::tstring agentInfo, std::vector<std::tstring> logLists);
-	void SaveMonitoringInfo(std::tstring agentInfo, std::tstring data);
+	void RequestProcessList(std::tstring agentInfo);
+	void ResponseProcessList(std::tstring agentInfo, std::tstring data);
+	void RequestFileDescriptorList(std::tstring agentInfo, std::tstring pid);
+	void ResponseFileDescriptorList(std::tstring agentInfo, std::tstring data);
+	void RequestStartMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists);
+	void RequestStopMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists);
+	void ResponseMonitoringResult(std::tstring agentInfo, std::tstring data);
+	void ResponseMonitoringLog(std::tstring agentInfo, std::tstring data);
 	void GetDeviceInfo(std::tstring agentInfo);
 	void SaveDeviceInfo(std::tstring agentInfo, std::tstring data);
 	void GetModuleInfo(std::tstring agentInfo);

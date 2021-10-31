@@ -13,15 +13,11 @@ enum PacketType {
 };
 
 enum PacketOpcode {
-    OPCODE1,
-    OPCODE2,
-    OPCODE3,
-    OPCODE4,
-    OPCODE5,
     PROCESS_LIST,
     FD_LIST,
-    MONITOR_ACTIVATE,
-    MONITOR_INACTIVATE,
+    MONITOR_ADD,
+    MONITOR_REMOVE,
+    MONITOR_RESULT,
     MONITOR_INFO,
     DEVICE_INFO,
     MODULE_INFO,
@@ -63,14 +59,14 @@ struct ST_PROCESS_INFO : public core::IFormatterObject
 {
     int pid;
     int ppid;
-    std::string name;
-    std::string state;
-    std::string cmdline;
-    std::string startTime;
+    std::tstring name;
+    std::tstring state;
+    std::tstring cmdline;
+    std::tstring startTime;
 
     ST_PROCESS_INFO(void)
     {}
-    ST_PROCESS_INFO(int _pid, int _ppid, std::string _name, std::string _state, std::string _cmdline, std::string _startTime)
+    ST_PROCESS_INFO(int _pid, int _ppid, std::tstring _name, std::tstring _state, std::tstring _cmdline, std::tstring _startTime)
         : pid(_pid), ppid(_ppid), name(_name), state(_state), cmdline(_cmdline), startTime(_startTime)
     {}
 
@@ -108,21 +104,21 @@ struct ST_PROCESS_LIST : public core::IFormatterObject
 struct ST_FD_INFO : public core::IFormatterObject
 {
     int pid;
-    std::string name;
-    std::string path;
+    std::string fdName;
+    std::string realPath;
 
     ST_FD_INFO(void)
     {}
-    ST_FD_INFO(int _pid, std::string _name, std::string _path)
-        : pid(_pid), name(_name), path(_path)
+    ST_FD_INFO(int _pid, std::string _fdName, std::string _realPath)
+        : pid(_pid), fdName(_fdName), realPath(_realPath)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
             + core::sPair(TEXT("Pid"), pid)
-            + core::sPair(TEXT("Name"), name)
-            + core::sPair(TEXT("Path"), path)
+            + core::sPair(TEXT("FdName"), fdName)
+            + core::sPair(TEXT("ReadPath"), realPath)
             ;
     }
 };
@@ -147,40 +143,82 @@ struct ST_FD_LIST : public core::IFormatterObject
     }
 };
 
-struct ST_MONITOR_LIST : public core::IFormatterObject
+struct ST_MONITOR_TARGET : public core::IFormatterObject
 {
-    std::vector <std::string> pathLists;
+    std::string processName;
+    std::string logPath;
 
-    ST_MONITOR_LIST(void)
+    ST_MONITOR_TARGET(void)
     {}
-    ST_MONITOR_LIST(std::vector<std::string> _pathLists)
-        : pathLists(_pathLists)
+    ST_MONITOR_TARGET(std::string _processName, std::string _logPath)
+        : processName(_processName), logPath(_logPath)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
-            + core::sPair(TEXT("PathLists"), pathLists)
+            + core::sPair(TEXT("ProcessName"), processName)
+            + core::sPair(TEXT("LogPath"), logPath)
+            ;
+    }
+};
+
+struct ST_MONITOR_LIST : public core::IFormatterObject
+{
+    std::vector <ST_MONITOR_TARGET> targetLists;
+
+    ST_MONITOR_LIST(void)
+    {}
+    ST_MONITOR_LIST(std::vector<ST_MONITOR_TARGET> _targetLists)
+        : targetLists(_targetLists)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("TargetLists"), targetLists)
+            ;
+    }
+};
+
+struct ST_MONITOR_RESULT : public core::IFormatterObject
+{
+    std::tstring logPath;
+    bool result;
+
+    ST_MONITOR_RESULT(void)
+    {}
+    ST_MONITOR_RESULT(std::tstring _logPath, bool _result)
+        : logPath(_logPath), result(_result)
+    {}
+
+    void OnSync(core::IFormatter& formatter)
+    {
+        formatter
+            + core::sPair(TEXT("LogPath"), logPath)
+            + core::sPair(TEXT("Result"), result)
             ;
     }
 };
 
 struct ST_MONITOR_INFO : public core::IFormatterObject
 {
-    std::string path;
-    std::string data;
+    std::string processName;
+    std::string logPath;
+    std::string changeData;
 
     ST_MONITOR_INFO(void)
     {}
-    ST_MONITOR_INFO(std::string _path, std::string _data)
-        : path(_path), data(_data)
+    ST_MONITOR_INFO(std::string _processName, std::string _logPath, std::string _changeData)
+        : processName(_processName), logPath(_logPath), changeData(_changeData)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
-            + core::sPair(TEXT("Path"), path)
-            + core::sPair(TEXT("Data"), data)
+            + core::sPair(TEXT("ProcessName"), processName)
+            + core::sPair(TEXT("LogPath"), logPath)
+            + core::sPair(TEXT("ChangeData"), changeData)
             ;
     }
 };

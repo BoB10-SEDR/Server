@@ -1,6 +1,8 @@
 #include "CEpollServer.h"
 #include "CMessage.h"
 
+extern ST_ENV env;
+
 CEpollServer::CEpollServer()
 {
 	memset(&serverAddress, 0, sizeof(serverAddress));
@@ -67,7 +69,7 @@ int CEpollServer::Send(std::tstring agentInfo, std::tstring message)
 
 	if (agentSocket <= 0)
 	{
-		core::Log_Warn(TEXT("CEpollServer.cpp - [%s] : %d"), TEXT("Agent Not Found"), TEXT(agentInfo.c_str()));
+		core::Log_Warn(TEXT("CEpollServer.cpp - [%s] : %s"), TEXT("Agent Not Found"), TEXT(agentInfo.c_str()));
 		return -1;
 	}
 
@@ -238,7 +240,7 @@ std::string CEpollServer::SearchAgent(int agentSocket)
 
 CEpollServer* CEpollServer::GetInstance()
 {
-	static CEpollServer instance;
+	static CEpollServer instance(env.socketPort);
 	return &instance;
 }
 
