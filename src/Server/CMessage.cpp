@@ -13,96 +13,94 @@ CMessage::~CMessage()
 
 void CMessage::Init()
 {
-	LoggerManager()->Info("CMessage INIT");
-	ServerManager()->Start();
-	std::future<void> c = std::async(std::launch::async, &CMessage::MatchReceiveMessage, this);
-	std::future<void> b = std::async(std::launch::async, &CMessage::ReceiveMessage, this);
-	std::future<void> a = std::async(std::launch::async, &CMessage::SendMessage, this);
+	core::Log_Debug(TEXT("CMessage.cpp - [%s]"), TEXT("Init"));
 
-	a.get();
-	b.get();
-	c.get();
+	ServerManager()->Start();
+
+	std::future<void> a = std::async(std::launch::async, &CMessage::MatchReceiveMessage, this);
+	std::future<void> b = std::async(std::launch::async, &CMessage::ReceiveMessage, this);
+	std::future<void> c = std::async(std::launch::async, &CMessage::SendMessage, this);
 }
 
 void CMessage::SendMessage()
 {
-	LoggerManager()->Info("Start SendMessage\n");
+	core::Log_Debug(TEXT("CMessage.cpp - [%s]"), TEXT("Working SendMessage In Thread"));
+	ST_SERVER_PACKET_INFO* stServerPacketInfo;
+
 	while (1) {
 		sleep(0);
-		std::lock_guard<std::mutex> lock_guard(sendMessagemutex);
+		{
+			std::lock_guard<std::mutex> lock_guard(sendMessageMutex);
 
-		if (sendMessage.empty())
-			continue;
+			if (sendMessage.empty())
+				continue;
 
-		ST_SERVER_PACKET_INFO* stServerPacketInfo = sendMessage.front();
-		sendMessage.pop();
+			stServerPacketInfo = sendMessage.front();
+			sendMessage.pop();
+		}
 
 		std::tstring jsPacketSend;
 		core::WriteJsonToString(stServerPacketInfo->stPacketInfo, jsPacketSend);
-		
-		ServerManager()->Send(stServerPacketInfo->agentInfo, jsPacketSend);
+		ServerManager()->Send(stServerPacketInfo->agentInfo, TEXT("BOBSTART") + jsPacketSend + TEXT("BOBEND"));
+		core::Log_Debug(TEXT("CMessage.cpp - [%s] : %s -> %s"), TEXT("Send Message"), TEXT(stServerPacketInfo->agentInfo.c_str()), TEXT(jsPacketSend.c_str()));
+		free(stServerPacketInfo->stPacketInfo);
+		free(stServerPacketInfo);
 	}
 }
 
 void CMessage::ReceiveMessage()
 {
-	LoggerManager()->Info("Start ReceiveMessage\n");
+	core::Log_Debug(TEXT("CMessage.cpp - [%s]"), TEXT("Working ReceiveMessage In Thread"));
 	ServerManager()->Recv();
 }
 
-void CMessage::PushSendMessage(std::string agentInfo, PacketType type, PacketOpcode opcode, std::string message)
+void CMessage::PushSendMessage(std::tstring agentInfo, PacketType type, PacketOpcode opcode, std::tstring message)
 {
 	sleep(0);
-	std::lock_guard<std::mutex> lock_guard(sendMessagemutex);
+	std::lock_guard<std::mutex> lock_guard(sendMessageMutex);
 	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(agentInfo, new ST_PACKET_INFO(SERVER, AGENT, type, opcode, message));
 	sendMessage.push(stServerPacketInfo);
 }
 
-void CMessage::PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo)
+void CMessage::PushReceiveMessage(std::tstring agentInfo, ST_PACKET_INFO* stPacketInfo)
 {
 	sleep(0);
-	std::lock_guard<std::mutex> lock_guard(receiveMessagemutex);
+	std::lock_guard<std::mutex> lock_guard(receiveMessageMutex);
 	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(agentInfo, stPacketInfo);
 	receiveMessage.push(stServerPacketInfo);
 }
 
 void CMessage::MatchReceiveMessage()
 {
-	LoggerManager()->Info("Start MatchReceiveMessage\n");
+	core::Log_Debug(TEXT("CMessage.cpp - [%s]"), TEXT("Working MatchReceiveMessage In Thread"));
 	std::future<void> result;
+	ST_SERVER_PACKET_INFO* stServerPacketInfo;
 
 	while (1)
 	{
 		sleep(0);
-		std::lock_guard<std::mutex> lock_guard(receiveMessagemutex);
+		{
+			std::lock_guard<std::mutex> lock_guard(receiveMessageMutex);
 
-		if (receiveMessage.empty())
-			continue;
+			if (receiveMessage.empty())
+				continue;
 
-		ST_SERVER_PACKET_INFO* stServerPacketInfo = receiveMessage.front();
-		receiveMessage.pop();
+			stServerPacketInfo = receiveMessage.front();
+			receiveMessage.pop();
+		}
 
 		switch (stServerPacketInfo->stPacketInfo->opcode) {
-		case OPCODE1:
-			LoggerManager()->Info(StringFormatter("Opcode1 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
-			//result = std::async(std::launch::async, &CSample::Event1, sample);
-			break;
-		case OPCODE2:
-			LoggerManager()->Info(StringFormatter("Opcode2 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
-			//result = std::async(std::launch::async, &CSample::Event2, sample);
-			break;
-		case OPCODE3:
-			LoggerManager()->Info(StringFormatter("Opcode3 Result [%s] : %s\n", stServerPacketInfo->agentInfo.c_str(), stServerPacketInfo->stPacketInfo->data.c_str()));
-			//result = std::async(std::launch::async, &CSample::Event3, sample, stServerPacketInfo->stPacketInfo->data.c_str());
-			break;
 		case PROCESS_LIST:
-			result = std::async(std::launch::async, func::SaveProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseProcessList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case FD_LIST:
-			result = std::async(std::launch::async, func::SaveFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseFileDescriptorList, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			break;
+		case MONITOR_RESULT:
+			result = std::async(std::launch::async, func::ResponseMonitoringResult, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case MONITOR_INFO:
-			result = std::async(std::launch::async, func::SaveMonitoringInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseMonitoringLog, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case DEVICE_INFO:
 			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
@@ -120,7 +118,7 @@ void CMessage::MatchReceiveMessage()
 			result = std::async(std::launch::async, func::SaveMessage, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		default:
-			LoggerManager()->Error(StringFormatter("Packet Type Error : %s", stServerPacketInfo->stPacketInfo->data.c_str()));
+			core::Log_Error(TEXT("CMessage.cpp - [%s] : %s "), TEXT("Packet Type Error"), TEXT(stServerPacketInfo->stPacketInfo->data.c_str()));
 			break;
 		}
 	}

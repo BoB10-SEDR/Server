@@ -6,10 +6,10 @@
 
 struct ST_SERVER_PACKET_INFO
 {
-	std::string agentInfo;
+	std::tstring agentInfo;
 	ST_PACKET_INFO* stPacketInfo;
 
-	ST_SERVER_PACKET_INFO(std::string agentInfo_, ST_PACKET_INFO* stPacketInfo_) :agentInfo(agentInfo_), stPacketInfo(stPacketInfo_) {}
+	ST_SERVER_PACKET_INFO(std::tstring agentInfo_, ST_PACKET_INFO* stPacketInfo_) :agentInfo(agentInfo_), stPacketInfo(stPacketInfo_) {}
 };
 
 class CMessage
@@ -17,21 +17,20 @@ class CMessage
 private:
 	std::queue<ST_SERVER_PACKET_INFO*> receiveMessage;
 	std::queue<ST_SERVER_PACKET_INFO*> sendMessage;
-	std::mutex receiveMessagemutex;
-	std::mutex sendMessagemutex;
+	std::mutex receiveMessageMutex;
+	std::mutex sendMessageMutex;
 
 	CMessage();
+	~CMessage();
 
 	void ReceiveMessage();	//에이전트에서 받은 메시지를 수신하는 기능
 	void SendMessage();		//에이전트로 메시지를 보내는 기능
 	void MatchReceiveMessage();	//수신 메시지큐에서 메시지를 읽어, 서버의 특정 기능과 매칭 시켜주는 기능
 public:
-	~CMessage();
-
 	static CMessage* GetInstance(void);
 	void Init();
-	void PushSendMessage(std::string agentInfo, PacketType type, PacketOpcode opcode, std::string message);	//보낼 메시지를 sendMessage에 큐에 추가
-	void PushReceiveMessage(std::string agentInfo, ST_PACKET_INFO* stPacketInfo);	//받은 메시지를 receiveMessage에 큐에 추가
+	void PushSendMessage(std::tstring agentInfo, PacketType type, PacketOpcode opcode, std::tstring message);	//보낼 메시지를 sendMessage에 큐에 추가
+	void PushReceiveMessage(std::tstring agentInfo, ST_PACKET_INFO* stPacketInfo);	//받은 메시지를 receiveMessage에 큐에 추가
 };
 
 inline CMessage* MessageManager()

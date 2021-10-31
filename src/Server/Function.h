@@ -3,21 +3,22 @@
 
 namespace func
 {
-	void GetProcessList(std::string agentInfo);
-	void SaveProcessList(std::string agentInfo, std::string data);
-	void GetFileDescriptorList(std::string agentInfo);
-	void SaveFileDescriptorList(std::string agentInfo, std::string data);
-	void StartMonitoring(std::string agentInfo, std::vector<std::string> logLists);
-	void StopMonitoring(std::string agentInfo, std::vector<std::string> logLists);
-	void SaveMonitoringInfo(std::string agentInfo, std::string data);
-	void GetDeviceInfo(std::string agentInfo);
-	void SaveDeviceInfo(std::string agentInfo, std::string data);
-	void GetModuleInfo(std::string agentInfo);
-	void SaveModuleInfo(std::string agentInfo, std::string data);
-	void ActivatePolicy(std::string agentInfo, int idx, std::string name, std::string version);
-	void InactivatePolicy(std::string agentInfo, int idx, std::string name, std::string version);
-	void SavePolicyStatus(std::string agentInfo, std::string data);
-	void ActivateCheck(std::string agentInfo, int idx, std::string name);
-	void SaveCheckStatus(std::string agentInfo, std::string data);
-	void SaveMessage(std::string agentInfo, std::string data);
+	void RequestProcessList(std::tstring agentInfo);
+	void ResponseProcessList(std::tstring agentInfo, std::tstring data);
+	void RequestFileDescriptorList(std::tstring agentInfo, std::tstring pid);
+	void ResponseFileDescriptorList(std::tstring agentInfo, std::tstring data);
+	void RequestStartMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists);
+	void RequestStopMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists);
+	void ResponseMonitoringResult(std::tstring agentInfo, std::tstring data);
+	void ResponseMonitoringLog(std::tstring agentInfo, std::tstring data);
+	void GetDeviceInfo(std::tstring agentInfo);
+	void SaveDeviceInfo(std::tstring agentInfo, std::tstring data);
+	void GetModuleInfo(std::tstring agentInfo);
+	void SaveModuleInfo(std::tstring agentInfo, std::tstring data);
+	void ActivatePolicy(std::tstring agentInfo, int idx, std::tstring name, std::tstring version);
+	void InactivatePolicy(std::tstring agentInfo, int idx, std::tstring name, std::tstring version);
+	void SavePolicyStatus(std::tstring agentInfo, std::tstring data);
+	void ActivateCheck(std::tstring agentInfo, int idx, std::tstring name);
+	void SaveCheckStatus(std::tstring agentInfo, std::tstring data);
+	void SaveMessage(std::tstring agentInfo, std::tstring data);
 }

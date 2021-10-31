@@ -5,17 +5,25 @@
 #include <algorithm>
 #include "RestApiServer.h"
 
+ST_ENV env;
+
 void SendTest() {
 	while (true)
 	{
 		sleep(0);
 		char agentInfo[BUFFER_SIZE];
+		char path[BUFFER_SIZE];
+
 		int select;
-		std::vector<std::string> logLists;
-		logLists.push_back("/path/logs/1");
-		logLists.push_back("/path/logs/2");
-		logLists.push_back("/path/logs/3");
-		
+		std::vector<ST_MONITOR_TARGET> logActiveLists;
+		/*logActiveLists.push_back("/var/log/nginx/access.log");
+		logActiveLists.push_back("/var/log/nginx/error.log");
+		*/
+		logActiveLists.push_back(ST_MONITOR_TARGET("ssh","/var/log/auth.log"));
+
+		std::vector<ST_MONITOR_TARGET> logInactiveLists;
+		logInactiveLists.push_back(ST_MONITOR_TARGET("ssh", "/var/log/auth.log"));
+
 		printf("Agent : ");
 		fgets(agentInfo, BUFFER_SIZE, stdin);
 		*(agentInfo + (strlen(agentInfo) - 1)) = 0;
@@ -23,22 +31,21 @@ void SendTest() {
 		printf("Opcode : ");
 		scanf("%d", &select);
 		printf("opcode : %d\n", select);
-
 		while (getchar() != '\n');
 
 		switch (select)
 		{
 		case 1:
-			func::GetProcessList(agentInfo);
+			func::RequestProcessList(agentInfo);
 			break;
 		case 2:
-			func::GetFileDescriptorList(agentInfo);
+			func::RequestFileDescriptorList(agentInfo, "1");
 			break;
 		case 3:
-			func::StartMonitoring(agentInfo, logLists);
+			func::RequestStartMonitoring(agentInfo, logActiveLists);
 			break;
 		case 4:
-			func::StopMonitoring(agentInfo, logLists);
+			func::RequestStopMonitoring(agentInfo, logInactiveLists);
 			break;
 		case 5:
 			func::GetDeviceInfo(agentInfo);
@@ -61,26 +68,54 @@ void SendTest() {
 	}
 }
 
+void SetLogger(std::string name, DWORD inputOption)
+{
+	std::tstring strModuleFile = core::GetFileName();
+	std::tstring strModuleDir = core::ExtractDirectory(strModuleFile);
+	std::tstring strModuleName = core::ExtractFileNameWithoutExt(strModuleFile);
+	std::tstring strLogFile = strModuleDir + TEXT("/") + strModuleName + TEXT(".log");
+
+	core::ST_LOG_INIT_PARAM_EX init;
+	init.strLogFile = strLogFile;
+	init.strID = TEXT(name);
+	init.dwInputFlag = inputOption;
+	init.dwOutputFlag = core::LOG_OUTPUT_FILE | core::LOG_OUTPUT_CONSOLE | core::LOG_OUTPUT_DBGWND;
+	init.dwMaxFileSize = 10 * 1000 * 1000;
+	init.dwMaxFileCount = 10;
+	init.nLogRotation = core::LOG_ROTATION_SIZE;
+	core::InitLog(init);
+}
+
 int main(int argc, char* argv[])
 {
+	if (argc != 5) {
+		printf("syntax : ./server.out <socket port> <restapi port> <restapi thread count> <logger name>\n");
+		printf("sample : ./server.out 12345 9080 2 logger-test\n");
+		return -1;
+	}
+
+	env.socketPort = argv[1];
+	env.apiPort = argv[2];
+	env.thr = argv[3];
+	env.loggerName = argv[4];
+
+#ifdef _DEBUG
+	SetLogger(env.loggerName, core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR | core::LOG_DEBUG);
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Program is Debug Mode"));
+#else
+	SetLogger(env.loggerName, core::LOG_INFO | core::LOG_WARN | core::LOG_ERROR);
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Program is Release Mode"));
+#endif
+
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Start Server Program!"));
 	try
 	{
-		LoggerManager()->Info("Start Server Program!");
-
 		std::future<void> a = std::async(std::launch::async, &CMessage::Init, MessageManager());
 		std::future<void> b = std::async(std::launch::async, &SendTest);
 
-		Pistache::Port port(9080);
+		Pistache::Port port(static_cast<uint16_t>(std::stol(env.apiPort)));
 
-		int thr = 2;
-
-		if (argc >= 2)
-		{
-			port = static_cast<uint16_t>(std::stol(argv[1]));
-
-			if (argc == 3)
-				thr = std::stoi(argv[2]);
-		}
+		int thr = std::stoi(env.thr);
 
 		Pistache::Address addr(Pistache::Ipv4::any(), port);
 
@@ -94,9 +129,9 @@ int main(int argc, char* argv[])
 	}
 	catch (std::exception& e)
 	{
-		LoggerManager()->Error(e.what());
+		core::Log_Error(TEXT("main.cpp - [%s]"), TEXT(e.what()));
 	}
-	LoggerManager()->Info("Terminate server Program!");
+	core::Log_Info(TEXT("main.cpp - [%s]"), TEXT("Terminate Agent Program!"));
 
 	return 0;
 }
