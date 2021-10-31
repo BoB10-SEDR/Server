@@ -163,6 +163,7 @@
     <TargetName>server</TargetName>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="dbconnection.cpp" />
     <ClCompile Include="CMessage.cpp" />
     <ClCompile Include="CEpollServer.cpp" />
     <ClCompile Include="Function.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="SampleRestApi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dbconnection.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CEpollServer.h" />
     <ClInclude Include="Function.h" />
@@ -187,7 +189,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -210,7 +212,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -233,7 +235,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -256,7 +258,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
-      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread</LibraryDependencies>
+      <LibraryDependencies>pistache;cppcore;protocol;dl;pthread;mysqlclient;</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
