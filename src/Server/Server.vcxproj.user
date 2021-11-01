@@ -5,6 +5,7 @@
     <RemoteDebuggerCommand>$(RemoteDeployDir)/Build/$(configuration)$(platform)/$(TargetFilename)</RemoteDebuggerCommand>
     <RemoteTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteTarget>
     <RemoteDebuggingTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteDebuggingTarget>
+    <RemoteDebuggerCommandArguments>12345 9080 4 test</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
@@ -16,6 +17,7 @@
     <RemoteDebuggerCommand>$(RemoteDeployDir)/Build/$(configuration)$(platform)/$(TargetFilename)</RemoteDebuggerCommand>
     <RemoteTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteTarget>
     <RemoteDebuggingTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteDebuggingTarget>
+    <RemoteDebuggerCommandArguments>12345 9080 4 test</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
@@ -27,6 +29,7 @@
     <RemoteDebuggerCommand>$(RemoteDeployDir)/Build/$(configuration)$(platform)/$(TargetFilename)</RemoteDebuggerCommand>
     <RemoteTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteTarget>
     <RemoteDebuggingTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteDebuggingTarget>
+    <RemoteDebuggerCommandArguments>12345 9080 4 test</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
@@ -38,6 +41,7 @@
     <RemoteDebuggerCommand>$(RemoteDeployDir)/Build/$(configuration)$(platform)/$(TargetFilename)</RemoteDebuggerCommand>
     <RemoteTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteTarget>
     <RemoteDebuggingTarget>1471636517;192.168.181.134 (username=, port=22, authentication=Password)</RemoteDebuggingTarget>
+    <RemoteDebuggerCommandArguments>12345 9080 4 test</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
