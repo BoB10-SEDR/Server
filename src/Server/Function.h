@@ -12,8 +12,9 @@ namespace func
 	void RequestStopMonitoring(std::tstring agentInfo, std::vector<ST_MONITOR_TARGET> targetLists);
 	void ResponseMonitoringResult(std::tstring agentInfo, std::tstring data);
 	void ResponseMonitoringLog(std::tstring agentInfo, std::tstring data);
-	void GetDeviceInfo(std::tstring agentInfo);
-	void SaveDeviceInfo(std::tstring agentInfo, std::tstring data);
+	void RequestDeviceInfo(std::tstring agentInfo);
+	void ResponseDeviceInfo(std::tstring agentInfo, std::tstring data);
+	void UpdateDeviceLive(std::tstring agentInfo);
 	void GetModuleInfo(std::tstring agentInfo);
 	void SaveModuleInfo(std::tstring agentInfo, std::tstring data);
 	void ActivatePolicy(std::tstring agentInfo, int idx, std::tstring name, std::tstring version);

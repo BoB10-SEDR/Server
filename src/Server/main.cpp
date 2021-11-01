@@ -49,7 +49,7 @@ void SendTest() {
 			func::RequestStopMonitoring(agentInfo, logInactiveLists);
 			break;
 		case 5:
-			func::GetDeviceInfo(agentInfo);
+			func::RequestDeviceInfo(agentInfo);
 			break;
 		case 6:
 			func::GetModuleInfo(agentInfo);

@@ -189,24 +189,113 @@ void func::ResponseMonitoringLog(std::tstring agentInfo, std::tstring data)
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Monitoring Info Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::GetDeviceInfo(std::tstring agentInfo)
+void func::RequestDeviceInfo(std::tstring agentInfo)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Device Info"), TEXT(agentInfo.c_str()));
 	MessageManager()->PushSendMessage(agentInfo, REQUEST, DEVICE_INFO, "");
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Request Device Info Complete"), TEXT(agentInfo.c_str()));
 }
 
-void func::SaveDeviceInfo(std::tstring agentInfo, std::tstring data)
+void func::ResponseDeviceInfo(std::tstring agentInfo, std::tstring data)
 {
 	core::Log_Info(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Response Device Info"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
 
 	ST_DEVICE_INFO deviceInfo;
 	core::ReadJsonFromString(&deviceInfo, data);
 
+	int category = -1;
+
+	CDatabase dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "bob10_sedr");
+	MYSQL_RES* res;
+	char sql[1024];
+	
+	//device category search
+	sprintf(sql,
+		TEXT("SELECT device_category_idx FROM bob10_sedr.device_model_match WHERE model_number='%s';"),
+		TEXT(deviceInfo.modelNumber.c_str())
+	);
+
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
+
+	std::vector<MYSQL_ROW> r = CDatabase::GetRowList(res);
+	if (r.size() == 1)
+		category = std::stoi(r[0][0]);
+
+	if (category == -1)
+		sprintf(sql,
+			TEXT("INSERT INTO device(name, model_number, serial_number, ip, mac, architecture, os, live, update_time, socket_key) VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', 1, '%s', '%s') ON DUPLICATE KEY UPDATE live = 1, update_time = '%s', socket_key = '%s';"),
+			TEXT(deviceInfo.name.c_str()),
+			TEXT(deviceInfo.modelNumber.c_str()),
+			TEXT(deviceInfo.serialNumber.c_str()),
+			TEXT(deviceInfo.ip.c_str()),
+			TEXT(deviceInfo.mac.c_str()),
+			TEXT(deviceInfo.architecture.c_str()),
+			TEXT(deviceInfo.os.c_str()),
+			TEXT(func::GetTimeStamp().c_str()),
+			TEXT(agentInfo.c_str()),
+			TEXT(func::GetTimeStamp().c_str()),
+			TEXT(agentInfo.c_str())
+		);
+	else
+		sprintf(sql,
+			TEXT("INSERT INTO device(device_category_idx, name, model_number, serial_number, ip, mac, architecture, os, live, update_time, socket_key) VALUES(%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', 1, '%s', '%s') ON DUPLICATE KEY UPDATE live = 1, update_time = '%s', socket_key = '%s';"),
+			category,
+			TEXT(deviceInfo.name.c_str()),
+			TEXT(deviceInfo.modelNumber.c_str()),
+			TEXT(deviceInfo.serialNumber.c_str()),
+			TEXT(deviceInfo.ip.c_str()),
+			TEXT(deviceInfo.mac.c_str()),
+			TEXT(deviceInfo.architecture.c_str()),
+			TEXT(deviceInfo.os.c_str()),
+			TEXT(func::GetTimeStamp().c_str()),
+			TEXT(agentInfo.c_str()),
+			TEXT(func::GetTimeStamp().c_str()),
+			TEXT(agentInfo.c_str())
+		);
+
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
+
 	//Save DataBase
 	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Device Info Complete"), TEXT(agentInfo.c_str()));
 }
+
+void func::UpdateDeviceLive(std::tstring agentInfo)
+{
+	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response UpdateDeviceLive"), TEXT(agentInfo.c_str()));
+
+	CDatabase dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "bob10_sedr");
+	MYSQL_RES* res;
+	char sql[1024];
+
+	sprintf(sql,
+		TEXT("UPDATE device SET update_time='%s', socket_key='', live=0 WHERE socket_key='%s';"),
+		TEXT(func::GetTimeStamp().c_str()),
+		TEXT(agentInfo.c_str())
+	);
+
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
+
+	//Save DataBase
+	core::Log_Debug(TEXT("Function.cpp - [%s-%s]"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()));
+	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response UpdateDeviceLive Complete"), TEXT(agentInfo.c_str()));
+}
+
 
 void func::GetModuleInfo(std::tstring agentInfo)
 {

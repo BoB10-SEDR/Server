@@ -1,5 +1,6 @@
 #include "CEpollServer.h"
 #include "CMessage.h"
+#include "Function.h"
 
 extern ST_ENV env;
 
@@ -220,6 +221,7 @@ int CEpollServer::PopEpoll(int agentSocket)
 	if (epoll_ctl(epollFD, EPOLL_CTL_DEL, agentSocket, NULL) < 0)
 		core::Log_Warn(TEXT("CEpollServer.cpp - [%s] : [%d]"), TEXT("PopEpoll Fail"), errno);
 
+	func::UpdateDeviceLive(agentInfo);
 	close(agentSocket);
 
 	agentInfoKeyLists.erase(agentInfo);

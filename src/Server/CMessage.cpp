@@ -103,7 +103,7 @@ void CMessage::MatchReceiveMessage()
 			result = std::async(std::launch::async, func::ResponseMonitoringLog, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case DEVICE_INFO:
-			result = std::async(std::launch::async, func::SaveDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
+			result = std::async(std::launch::async, func::ResponseDeviceInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
 			break;
 		case MODULE_INFO:
 			result = std::async(std::launch::async, func::SaveModuleInfo, stServerPacketInfo->agentInfo, stServerPacketInfo->stPacketInfo->data);
