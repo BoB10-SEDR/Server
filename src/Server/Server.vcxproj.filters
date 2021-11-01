@@ -7,7 +7,7 @@
     <ClInclude Include="Function.h" />
     <ClInclude Include="RestApiServer.h" />
     <ClInclude Include="SampleRestApi.h" />
-    <ClInclude Include="dbconnection.h" />
+    <ClInclude Include="CDatabase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CMessage.cpp" />
@@ -16,6 +16,6 @@
     <ClCompile Include="RestApiServer.cpp" />
     <ClCompile Include="SampleRestApi.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="dbconnection.cpp" />
+    <ClCompile Include="CDatabase.cpp" />
   </ItemGroup>
 </Project>
