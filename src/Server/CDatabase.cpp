@@ -69,6 +69,11 @@ void CDatabase::ClearResponse(MYSQL_RES* res)
     mysql_free_result(this->m_res);
 }
 
+const char* CDatabase::LastError()
+{
+    return mysql_error(this->m_conn);
+}
+
 std::vector<std::vector<std::string>> CDatabase::GetQueryRow() // 2차원 배열을 사용
 {
     std::vector<std::vector<std::string>> records;

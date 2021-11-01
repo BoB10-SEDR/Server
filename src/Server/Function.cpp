@@ -1,5 +1,6 @@
 #include "Function.h"
 #include "CMessage.h"
+#include "CDatabase.h"
 
 void func::RequestProcessList(std::tstring agentInfo)
 {
@@ -15,9 +16,28 @@ void func::ResponseProcessList(std::tstring agentInfo, std::tstring data)
 	ST_PROCESS_LIST processList;
 
 	core::ReadJsonFromString(&processList, data);
-#ifdef _DEBUG
+	
+	CDatabase dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "bob10_sedr");
+	MYSQL_RES* res;
+	char sql[1024];
+
+	sprintf(sql, TEXT("DELETE FROM bob10_sedr.process WHERE deviceinfo = '%s';"), TEXT(agentInfo.c_str()));
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
+
 	for (auto i : processList.processLists)
 	{
+		sprintf(sql, TEXT("Insert into bob10_sedr.process(pid, ppid, name, state, cmdline, stime, deviceinfo) values (%d,%d,'%s','%s','%s','%s','%s');"), i.pid, i.ppid, TEXT(i.name.c_str()), TEXT(i.state.c_str()), TEXT(i.cmdline.c_str()), TEXT(i.startTime.c_str()), TEXT(agentInfo.c_str()));
+		res = dbcon.ExcuteQuery(sql);
+		if (dbcon.LastError() == NULL)
+		{
+			core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+			return;
+		}
 		core::Log_Debug(TEXT("Function.cpp - [PID] : %d"), i.pid);
 		core::Log_Debug(TEXT("Function.cpp - [PPID] : %d"), i.ppid);
 		core::Log_Debug(TEXT("Function.cpp - [Name] : %s"), TEXT(i.name.c_str()));
@@ -25,8 +45,6 @@ void func::ResponseProcessList(std::tstring agentInfo, std::tstring data)
 		core::Log_Debug(TEXT("Function.cpp - [Cmdline] : %s"), TEXT(i.cmdline.c_str()));
 		core::Log_Debug(TEXT("Function.cpp - [STime] : %s"), TEXT(i.startTime.c_str()));
 	}
-#endif
-	//Save DataBase
 
 	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process List Complete"), TEXT(agentInfo.c_str()));

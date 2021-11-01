@@ -23,6 +23,7 @@ public:
     static std::vector<MYSQL_ROW> GetRowList(MYSQL_RES* res);
     int LastResponsePK();
     void ClearResponse(MYSQL_RES* res);
+    const char* LastError();
 
     std::vector<std::vector<std::string>> GetQueryRow(); 
     void PrintRecords(const std::vector<std::vector<std::string>>& records); 
