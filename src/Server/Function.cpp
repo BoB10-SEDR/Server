@@ -1,6 +1,18 @@
 #include "Function.h"
 #include "CMessage.h"
 #include "CDatabase.h"
+#include <filesystem>
+#include <time.h>
+
+std::string func::GetTimeStamp()
+{
+	time_t curTime = time(NULL);
+	char timestamp[20];
+	struct tm* a = localtime(&curTime);
+
+	sprintf(timestamp, "%04d-%02d-%02d %02d:%02d:%02d", 1900 + a->tm_year, a->tm_mon + 1, a->tm_mday, a->tm_hour, a->tm_min, a->tm_sec);
+	return timestamp;
+}
 
 void func::RequestProcessList(std::tstring agentInfo)
 {
@@ -157,6 +169,20 @@ void func::ResponseMonitoringLog(std::tstring agentInfo, std::tstring data)
 
 	ST_MONITOR_INFO monitorInfo;
 	core::ReadJsonFromString(&monitorInfo, data);
+
+	CDatabase dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "bob10_sedr");
+	MYSQL_RES* res;
+	char sql[1024];
+
+	sprintf(sql, TEXT("INSERT INTO bob10_sedr.log(category, env, original_log, create_time, attack) VALUES ('%s', '%s', '%s', '%s', %d);"),
+		TEXT("log"), TEXT("Agent"), TEXT(monitorInfo.changeData.c_str()), TEXT(func::GetTimeStamp().c_str()), 0);
+
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
 
 	//Save DataBase
 	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));

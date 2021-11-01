@@ -3,6 +3,7 @@
 
 namespace func
 {
+	std::string GetTimeStamp();
 	void RequestProcessList(std::tstring agentInfo);
 	void ResponseProcessList(std::tstring agentInfo, std::tstring data);
 	void RequestFileDescriptorList(std::tstring agentInfo, std::tstring pid);
