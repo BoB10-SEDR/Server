@@ -64,16 +64,34 @@ void func::ResponseFileDescriptorList(std::tstring agentInfo, std::tstring data)
 	ST_FD_LIST fdLIST;
 	core::ReadJsonFromString(&fdLIST, data);
 
+	CDatabase dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "bob10_sedr");
+	MYSQL_RES* res;
+	char sql[1024];
+
+	sprintf(sql, TEXT("DELETE FROM bob10_sedr.filedescriptor WHERE deviceinfo = '%s' and pid = %d;"), TEXT(agentInfo.c_str()), fdLIST.pid);
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
+
 #ifdef _DEBUG
 	core::Log_Debug(TEXT("Function.cpp - [PID] : %d"), fdLIST.pid);
 	for (auto i : fdLIST.fdLists)
 	{
+		sprintf(sql, TEXT("Insert into bob10_sedr.filedescriptor(pid, fdname, realpath, deviceinfo) values (%d,'%s','%s','%s');"), i.pid, TEXT(i.fdName.c_str()), TEXT(i.realPath.c_str()), TEXT(agentInfo.c_str()));
+		res = dbcon.ExcuteQuery(sql);
+		if (dbcon.LastError() == NULL)
+		{
+			core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+			return;
+		}
 		core::Log_Debug(TEXT("Function.cpp - [PID] : %d"), i.pid);
 		core::Log_Debug(TEXT("Function.cpp - [FdName] : %s"), TEXT(i.fdName.c_str()));
 		core::Log_Debug(TEXT("Function.cpp - [RealPath] : %s"), TEXT(i.realPath.c_str()));
 	}
 #endif
-
 	//Save DataBase
 	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process List Complete"), TEXT(agentInfo.c_str()));
