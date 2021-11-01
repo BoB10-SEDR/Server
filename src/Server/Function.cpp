@@ -76,7 +76,7 @@ void func::ResponseFileDescriptorList(std::tstring agentInfo, std::tstring data)
 		return;
 	}
 
-#ifdef _DEBUG
+
 	core::Log_Debug(TEXT("Function.cpp - [PID] : %d"), fdLIST.pid);
 	for (auto i : fdLIST.fdLists)
 	{
@@ -91,7 +91,7 @@ void func::ResponseFileDescriptorList(std::tstring agentInfo, std::tstring data)
 		core::Log_Debug(TEXT("Function.cpp - [FdName] : %s"), TEXT(i.fdName.c_str()));
 		core::Log_Debug(TEXT("Function.cpp - [RealPath] : %s"), TEXT(i.realPath.c_str()));
 	}
-#endif
+
 	//Save DataBase
 	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Process List Complete"), TEXT(agentInfo.c_str()));
@@ -131,6 +131,20 @@ void func::ResponseMonitoringResult(std::tstring agentInfo, std::tstring data)
 
 	ST_MONITOR_RESULT monitorResult;
 	core::ReadJsonFromString(&monitorResult, data);
+
+	CDatabase dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "bob10_sedr");
+	MYSQL_RES* res;
+	char sql[1024];
+
+	sprintf(sql, TEXT("INSERT INTO monitoring (processName, logPath, result, deviceinfo) VALUES('%s', '%s', %d, '%s') ON DUPLICATE KEY UPDATE result = %d"), 
+		TEXT(monitorResult.processName.c_str()), TEXT(monitorResult.logPath.c_str()), monitorResult.result, TEXT(agentInfo.c_str()), monitorResult.result);
+
+	res = dbcon.ExcuteQuery(sql);
+	if (dbcon.LastError() == NULL)
+	{
+		core::Log_Error(TEXT("Function.cpp - [%s] %s -> %s"), TEXT("Database Error"), TEXT(sql), TEXT(dbcon.LastError()));
+		return;
+	}
 
 	//Save DataBase
 	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), TEXT(agentInfo.c_str()), TEXT(data.c_str()));

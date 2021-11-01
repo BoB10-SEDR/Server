@@ -183,18 +183,20 @@ struct ST_MONITOR_LIST : public core::IFormatterObject
 
 struct ST_MONITOR_RESULT : public core::IFormatterObject
 {
+    std::string processName;
     std::tstring logPath;
     bool result;
 
     ST_MONITOR_RESULT(void)
     {}
-    ST_MONITOR_RESULT(std::tstring _logPath, bool _result)
-        : logPath(_logPath), result(_result)
+    ST_MONITOR_RESULT(std::string _processName, std::tstring _logPath, bool _result)
+        : processName(_processName), logPath(_logPath), result(_result)
     {}
 
     void OnSync(core::IFormatter& formatter)
     {
         formatter
+            + core::sPair(TEXT("ProcessName"), processName)
             + core::sPair(TEXT("LogPath"), logPath)
             + core::sPair(TEXT("Result"), result)
             ;
