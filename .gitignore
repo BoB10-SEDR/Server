@@ -1,0 +1,9 @@
+Build
+Output
+Src/.vs
+CMakeFiles/
+*.cmake
+CMakeCache.txt
+Makefile
+*.vcxproj.user
+.vs
