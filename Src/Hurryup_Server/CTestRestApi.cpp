@@ -23,7 +23,13 @@ void CTestRestApi::PostProcessListRestApi(const Pistache::Rest::Request& request
         int idx = request_body.at("idx").get_ref<const nlohmann::json::number_integer_t&>();
         int socket_key = -1;
 
-        MYSQL_RES *res = dbcon.SelectQuery(TEXT("SELECT socket_key FROM bob10_sedr.device where idx=%d"), idx);
+        MYSQL_RES *res = dbcon.SelectQuery(TEXT("SELECT socket_key FROM device where idx=%d"), idx);
+
+        if (res == NULL) 
+        {
+            response.send(Pistache::Http::Code::Ok, "Query Error");
+            return;
+        }
 
         std::vector<MYSQL_ROW> row = CDatabase::GetRowList(res);
         if (row.size() == 1)

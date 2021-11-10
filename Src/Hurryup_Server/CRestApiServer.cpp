@@ -4,6 +4,16 @@
 
 extern ST_ENV env;
 
+CRestApiServer::CRestApiServer()
+{
+
+}
+
+CRestApiServer::~CRestApiServer()
+{
+
+}
+
 void CRestApiServer::Init()
 {
 
@@ -41,7 +51,10 @@ void CRestApiServer::Start()
 
 void CRestApiServer::End()
 {
-
+	for (auto i : apiList)
+	{
+		free(i);
+	}
 }
 
 void CRestApiServer::SetupRoutes()

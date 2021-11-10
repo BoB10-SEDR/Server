@@ -15,6 +15,8 @@ private:
 	{ }
 	std::vector<CApi<Pistache::Rest::Router>*> apiList;
 	Pistache::Rest::Router router;
+	CRestApiServer();
+	~CRestApiServer();
 public:
 	static CRestApiServer* GetInstance(void);
 	virtual void Init();

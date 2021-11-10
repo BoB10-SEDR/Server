@@ -70,8 +70,8 @@ void CAgentServer::Start()
 
 	SetupRoutes();
 
-	std::future<void> send = std::async(std::launch::async, &CAgentServer::Send, AgentServerManager());
-	std::future<void> receive = std::async(std::launch::async, &CAgentServer::Recv, AgentServerManager());
+	//std::future<void> send = std::async(std::launch::async, &CAgentServer::Send, AgentServerManager());
+	//std::future<void> receive = std::async(std::launch::async, &CAgentServer::Recv, AgentServerManager());
 	std::future<void> match = std::async(std::launch::async, &CAgentServer::MatchMessage, AgentServerManager());
 }
 
@@ -85,7 +85,7 @@ void CAgentServer::SetupRoutes()
 
 void CAgentServer::Send()
 {
-	core::Log_Debug(TEXT("CMessage.cpp - [%s]"), TEXT("Working SendMessage In Thread"));
+	core::Log_Debug(TEXT("CAgentServer.cpp - [%s]"), TEXT("Working SendMessage In Thread"));
 	ST_SERVER_PACKET_INFO* stServerPacketInfo;
 
 	while (1) {
@@ -121,6 +121,7 @@ void CAgentServer::Send()
 
 void CAgentServer::Recv()
 {
+	core::Log_Debug(TEXT("CAgentServer.cpp - [%s]"), TEXT("Working RecvMessage In Thread"));
 	int timeout = -1;
 	while (1)
 	{
@@ -216,18 +217,24 @@ void CAgentServer::MatchMessage()
 
 	while (1)
 	{
+		sleep(0);
 		stServerPacketInfo = MessageManager()->PopReceiveMessage();
 
 		if (stServerPacketInfo == NULL)
 			continue;
 	
 		core::Log_Debug(TEXT("CAgentServer.cpp - [%s] %s"), TEXT("Receive Packet"), TEXT(stServerPacketInfo->stPacketInfo->opcode));
+		// 받은 메세지를 free 해주기 위해서, 그냥 Cagent api 에서 받은 메세지 주소를 프리 처리하는게 좋을꺼 같다.
 		std::future<void> result = std::async(std::launch::async, router[stServerPacketInfo->stPacketInfo->opcode], agentApi, stServerPacketInfo->agentSocket, stServerPacketInfo->stPacketInfo->data);
 	}
+	free(agentApi);
 }
 
 void CAgentServer::End()
 {
+	for (auto i : apiList)
+		free(i);
+
 	close(epollFD);
 	close(serverSocket);
 	serverSocket = -1;
@@ -259,7 +266,6 @@ int CAgentServer::PushEpoll(int agentSocket, int event)
 	{
 		agentMessageBuffers.insert(std::pair<int, std::string>(agentSocket, ""));
 	}
-
 	return 0;
 }
 

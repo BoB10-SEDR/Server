@@ -55,11 +55,10 @@ int CDatabase::InsertQuery(const std::tstring sql_query, ...)
     if (mysql_query(this->m_conn, buf))
     {
         core::Log_Error(TEXT("CDatabase.cpp - [%s] : %s -> %s"), TEXT("Mysql Query Error"), TEXT(buf), TEXT(mysql_error(this->m_conn)));
-        return NULL;
+        return -1;
     }
 
-    MYSQL_RES* res = mysql_store_result(this->m_conn);
-    int idx = mysql_insert_id(this->m_conn);
+    int idx = (int)mysql_insert_id(this->m_conn);
     return idx;
 }
 
