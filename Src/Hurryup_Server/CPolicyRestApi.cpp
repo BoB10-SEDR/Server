@@ -122,7 +122,7 @@ void CPolicyRestApi::GetPolicyInfo(const Pistache::Rest::Request& request, Pista
 
 void CPolicyRestApi::PostPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("GetPolicyInfo"));
+    core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("PostPolicyInfo"));
 
     try {
         nlohmann::json request_body = nlohmann::json::parse(request.body());
@@ -214,6 +214,125 @@ void CPolicyRestApi::PostPolicyInfo(const Pistache::Rest::Request& request, Pist
 
 void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("PutPolicyInfo"));
+
+    try {
+        nlohmann::json request_body = nlohmann::json::parse(request.body());
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+        bool error = false;
+        int idx = -1;
+
+        std::vector<std::string> column = { "main", "sub", "classify", "name", "description", "isfile", "apply_content", "release_content" };
+
+        if (request.hasParam(":idx")) {
+            std::string message = request.param(":idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+                error = true;
+            }
+        }
+
+        for (auto i : column)
+        {
+            if (!request_body.count(i))
+            {
+                error = true;
+                jsonMessage["errors"].push_back({ {"Parameter Not exisit.", i} });
+            }
+        }
+
+        if (!request_body.at("isfile").is_boolean()) {
+            error = true;
+            jsonMessage["errors"].push_back({ {"Parameter Type Error.", "isfile type must be boolean"} });
+        }
+
+        if (error)
+        {
+            response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT idx FROM policy WHERE idx = %d;"), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        if (CDatabase::GetRowList(res).size() != 1) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Not_Found", "Policy Is Not Exisit"} });
+            response.send(Pistache::Http::Code::Not_Found, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        res = dbcon.SelectQuery(TEXT("SELECT idx FROM security_category where main='%s' and sub='%s';"),
+            TEXT(request_body.at("main").get_ref<const nlohmann::json::string_t&>().c_str()),
+            TEXT(request_body.at("sub").get_ref<const nlohmann::json::string_t&>().c_str()));
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        int security_category_idx = -1;
+        bool result = true;
+
+        std::vector<MYSQL_ROW> row = CDatabase::GetRowList(res);
+        if (row.size() == 1)
+            security_category_idx = std::stoi(row[0][0]);
+
+        if (security_category_idx == -1) {
+            result = dbcon.UpdateQuery(TEXT("UPDATE policy set classify = '%s', name = '%s' , description = '%s', isfile = %d, apply_content = '%s', release_content = '%s', security_category_idx = NULL where idx = %d;"),
+                TEXT(request_body.at("classify").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("name").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("description").get_ref<const nlohmann::json::string_t&>().c_str()),
+                request_body.at("isfile").get_ref<const nlohmann::json::boolean_t&>() ? 1 : 0,
+                TEXT(request_body.at("apply_content").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("release_content").get_ref<const nlohmann::json::string_t&>().c_str()),
+                idx
+            );
+        }
+        else
+        {
+            result = dbcon.UpdateQuery(TEXT("UPDATE policy set classify = '%s', name = '%s' , description = '%s', isfile = %d, apply_content = '%s', release_content = '%s', security_category_idx = %d where idx = %d;"),
+                TEXT(request_body.at("classify").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("name").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("description").get_ref<const nlohmann::json::string_t&>().c_str()),
+                request_body.at("isfile").get_ref<const nlohmann::json::boolean_t&>() ? 1 : 0,
+                TEXT(request_body.at("apply_content").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("release_content").get_ref<const nlohmann::json::string_t&>().c_str()),
+                security_category_idx,
+                idx
+            );
+        }
+
+        if (!result) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        jsonMessage["message"] = "Success";
+        jsonMessage["outputs"].push_back({ {"idx", idx} });
+        response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+    }
+    catch (nlohmann::json::type_error& ex)
+    {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
+        response.send(Pistache::Http::Code::Ok, ex.what());
+    }
 }
 
 void CPolicyRestApi::DeletePolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
