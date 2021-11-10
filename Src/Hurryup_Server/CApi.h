@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "CDatabase.h"
 #include "CMessage.h"
+#include "DataPattern.h"
 
 template <typename ROUTER>
 class CApi
