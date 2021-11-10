@@ -27,7 +27,7 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
 
     if (request.query().has("page")) {
         std::string message = request.query().get("page").value();
-        if (std::regex_match(message, regexPage))
+        if (std::regex_match(message, regexNumber))
             page = atoi(message.c_str());
         else {
             jsonMessage["message"] = "Error";
@@ -38,7 +38,7 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
 
     if (request.query().has("limit")) {
         std::string message = request.query().get("limit").value();
-        if (std::regex_match(message, regexPage))
+        if (std::regex_match(message, regexLimit))
             limit = atoi(message.c_str());
         else {
             jsonMessage["message"] = "Error";
@@ -63,7 +63,9 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
         return;    
     }
 
-    for (auto i : CDatabase::GetRowList(res)) {
+    std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+    for (auto i : rows) {
         jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
     }
 
@@ -73,6 +75,49 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
 
 void CPolicyRestApi::GetPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("GetPolicyInfo"));
+
+    bool error = false;
+    int idx = -1;
+
+    nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+    if (request.hasParam(":idx")) {
+        std::string message = request.param(":idx").as<std::string>();
+        if (std::regex_match(message, regexNumber))
+            idx = atoi(message.c_str());
+        else {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+            error = true;
+        }
+    }
+
+    if (error) {
+        response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+        return;
+    }
+
+    MYSQL_RES* res = dbcon.SelectQuery(
+        TEXT("SELECT JSON_OBJECT('idx', p.idx, 'main', main, 'sub', sub, 'classify', classify, 'name',NAME, 'description', description, 'isfile', IF(isfile = 1, true, false), 'apply_content', apply_content, 'release_content', release_content) FROM policy p JOIN security_category s ON p.security_category_idx = s.idx WHERE p.idx = %d;"),
+        idx);
+
+    if (res == NULL) {
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+        response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+        return;
+    }
+    
+    std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+
+    for (auto i : rows) {
+        jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+    }
+
+    jsonMessage["message"] = "Success";
+    response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
 }
 
 void CPolicyRestApi::PostPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
