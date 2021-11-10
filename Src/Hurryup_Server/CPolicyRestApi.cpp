@@ -337,10 +337,73 @@ void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pista
 
 void CPolicyRestApi::DeletePolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("DeletePolicyInfo"));
+
+    try {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+        bool error = false;
+        int idx = -1;
+
+        if (request.hasParam(":idx")) {
+            std::string message = request.param(":idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT idx FROM policy WHERE idx = %d;"), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        if (CDatabase::GetRowList(res).size() != 1) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Not_Found", "Policy Is Not Exisit"} });
+            response.send(Pistache::Http::Code::Not_Found, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        bool result = true;
+
+        result = dbcon.DeleteQuery(TEXT("DELETE FROM policy where idx = %d;"), idx);
+
+        if (!result) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        jsonMessage["message"] = "Success";
+        response.send(Pistache::Http::Code::No_Content, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+    }
+    catch (nlohmann::json::type_error& ex)
+    {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
+        response.send(Pistache::Http::Code::Ok, ex.what());
+    }
 }
 
 void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+
 }
 
 void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
