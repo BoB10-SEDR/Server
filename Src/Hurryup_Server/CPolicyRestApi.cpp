@@ -601,8 +601,6 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
 
         MessageManager()->PushSendMessage(agentSocket, REQUEST, "/monitoring/inactivate", jsPacketSend);
 
-        std::cout << jsPacketSend << std::endl;
-
         jsonMessage["message"] = "Success";
         response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
     }
@@ -617,10 +615,59 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
 
 void CPolicyRestApi::GetPolicyDownload(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-
+    
 }
 
 void CPolicyRestApi::GetPolicyAvailableDeviceLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-}
+    core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("GetPolicyAvailableDeviceLists"));
 
+    try {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+        bool error = false;
+        int idx = -1;
+
+        if (request.hasParam(":idx")) {
+            std::string message = request.param(":idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        MYSQL_RES * res = dbcon.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', d.idx, 'name', d.name) FROM device_recommand dr JOIN policy p ON p.security_category_idx = dr.security_category_idx join device d ON d.device_category_idx = dr.device_category_idx  WHERE p.idx = %d;"), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+        for (auto i : rows) {
+            jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+        }
+
+        jsonMessage["message"] = "Success";
+        response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+    }
+    catch (nlohmann::json::type_error& ex)
+    {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
+        response.send(Pistache::Http::Code::Ok, ex.what());
+    }
+}
