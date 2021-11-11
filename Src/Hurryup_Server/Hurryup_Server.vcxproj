@@ -130,6 +130,7 @@
     <ClCompile Include="CDeviceRestApi.cpp" />
     <ClCompile Include="CInspectionApi.cpp" />
     <ClCompile Include="CMessage.cpp" />
+    <ClCompile Include="CNetworkCategoryRestApi.cpp" />
     <ClCompile Include="CPolicyRestApi.cpp" />
     <ClCompile Include="CRestApiServer.cpp" />
     <ClCompile Include="CTestRestApi.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="CDeviceRestApi.h" />
     <ClInclude Include="CInspectionApi.h" />
     <ClInclude Include="CMessage.h" />
+    <ClInclude Include="CNetworkCategoryRestApi.h" />
     <ClInclude Include="CPolicyRestApi.h" />
     <ClInclude Include="CRestApiServer.h" />
     <ClInclude Include="CServer.h" />

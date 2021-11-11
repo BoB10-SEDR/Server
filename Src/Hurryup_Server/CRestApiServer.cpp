@@ -3,6 +3,7 @@
 #include "CTestRestApi.h"
 #include "CPolicyRestApi.h"
 #include "CInspectionApi.h"
+#include "CNetworkCategoryRestApi.h"
 
 extern ST_ENV env;
 
@@ -42,6 +43,7 @@ void CRestApiServer::Init()
 	apiList.push_back(new CTestRestApi());
 	apiList.push_back(new CPolicyRestApi());
 	apiList.push_back(new CInspectionApi());
+	apiList.push_back(new CNetworkCategoryRestApi());
 
 	SetupRoutes();
 }
