@@ -498,7 +498,7 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
         std::tstring jsPacketSend;
         core::WriteJsonToString(&policyInfo, jsPacketSend);
 
-        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/monitoring/activate", jsPacketSend);
+        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/policy/activate", jsPacketSend);
 
         std::cout << jsPacketSend << std::endl;
 
@@ -606,7 +606,7 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
         std::tstring jsPacketSend;
         core::WriteJsonToString(&policyInfo, jsPacketSend);
 
-        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/monitoring/inactivate", jsPacketSend);
+        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/policy/inactivate", jsPacketSend);
 
         jsonMessage["message"] = "Success";
         response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));

@@ -834,6 +834,121 @@ void CInspectionApi::DeleteInspectionInfo(const Pistache::Rest::Request& request
 
 void CInspectionApi::PostInspectionActivate(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("PostInspectionActivate"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
+    try {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+        bool error = false;
+        int idx = -1;
+        int device_idx = -1;
+
+        if (request.hasParam(":idx")) {
+            std::string message = request.param(":idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+                error = true;
+            }
+        }
+
+        if (request.hasParam(":device_idx")) {
+            std::string message = request.param(":device_idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                device_idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "device idx must be number."} });
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT socket FROM device WHERE idx = %d;"), device_idx);
+        int agentSocket = 0;
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        std::vector<MYSQL_ROW> row = CDatabase::GetRowList(res);
+
+        if (row.size() == 0) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Not_Found", "Device Is Not Exisit"} });
+            response.send(Pistache::Http::Code::Not_Found, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+        else if (row.size() == 1) {
+            agentSocket = std::stoi(row[0][0]);
+        }
+
+        if (agentSocket == 0) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Device_Error", "Device Not Connected"} });
+            response.send(Pistache::Http::Code::Not_Found, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        res = dbcon.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', a.idx, 'name', a.name, 'description', a.description, 'update_time', a.update_time, 'content', JSON_EXTRACT(b.content, '$'))\
+            FROM inspection a\
+            JOIN(\
+                SELECT i.idx, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idx', ist.idx, 'name', ist.name, 'description', ist.description, 'classify', ist.classify, 'main', s.main, 'sub', s.sub)), ']') AS content\
+                from inspection i\
+                join inspection_step ist\
+                ON json_contains(JSON_EXTRACT(i.content, '$[*]'), ist.idx)\
+                JOIN security_category s\
+                ON s.idx = ist.security_category_idx\
+                GROUP BY i.idx\
+            )b ON b.idx = a.idx\
+            WHERE a.idx = %d;\
+            "), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        bool result = true;
+
+        row = CDatabase::GetRowList(res);
+        if (row.size() == 0) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Not_Found", "Policy Is Not Exisit"} });
+            response.send(Pistache::Http::Code::Not_Found, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        std::cout << row[0][0] << std::endl;
+        //ST_POLICY_INFO policyInfo(atoi(row[0][0]), row[0][1], row[0][3] == NULL ? "" : row[0][3]);
+        //std::tstring jsPacketSend;
+        //core::WriteJsonToString(&policyInfo, jsPacketSend);
+
+        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/inspection/activate", row[0][0]);
+
+        jsonMessage["message"] = "Success";
+        response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+    }
+    catch (nlohmann::json::type_error& ex)
+    {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
+    }
 }
 
 void CInspectionApi::GetInspectionDownload(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
@@ -842,16 +957,225 @@ void CInspectionApi::GetInspectionDownload(const Pistache::Rest::Request& reques
 
 void CInspectionApi::GetInspectionAvailableDeviceLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionAvailableDeviceLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
+    try {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+        bool error = false;
+        int idx = -1;
+
+        if (request.hasParam(":idx")) {
+            std::string message = request.param(":idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', d.idx, 'name', d.name) FROM device_recommand dr JOIN inspection_step p ON p.security_category_idx = dr.security_category_idx join device d ON d.device_category_idx = dr.device_category_idx  WHERE p.idx = %d;"), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+        for (auto i : rows) {
+            jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+        }
+
+        jsonMessage["message"] = "Success";
+        response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+    }
+    catch (nlohmann::json::type_error& ex)
+    {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
+    }
 }
 
 void CInspectionApi::GetInspectionAvailablePolicyLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionAvailablePolicyLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
+    try {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+        bool error = false;
+        int idx = -1;
+
+        if (request.hasParam(":idx")) {
+            std::string message = request.param(":idx").as<std::string>();
+            if (std::regex_match(message, regexNumber))
+                idx = atoi(message.c_str());
+            else {
+                jsonMessage["message"] = "Error";
+                jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+                error = true;
+            }
+        }
+
+        if (error)
+        {
+            response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', p.idx, 'classify', p.classify, 'name', p.name, 'description', p.description) FROM inspection_step i\
+            JOIN policy p ON i.security_category_idx = p.security_category_idx\
+            WHERE i.idx = %d"), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+        for (auto i : rows) {
+            jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+        }
+
+        jsonMessage["message"] = "Success";
+        response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+    }
+    catch (nlohmann::json::type_error& ex)
+    {
+        nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
+    }
 }
 
 void CInspectionApi::GetInspectionLogLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionLogLists"));
+
+    bool error = false;
+    int page = 1;
+    int limit = 20;
+
+    nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+    if (request.query().has("page")) {
+        std::string message = request.query().get("page").value();
+        if (std::regex_match(message, regexNumber))
+            page = atoi(message.c_str());
+        else {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Parameter Errors", "page must be number."} });
+            error = true;
+        }
+    }
+
+    if (request.query().has("limit")) {
+        std::string message = request.query().get("limit").value();
+        if (std::regex_match(message, regexLimit))
+            limit = atoi(message.c_str());
+        else {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Parameter Errors", "limit must be 2 digits number."} });
+            error = true;
+        }
+    }
+
+    if (error) {
+        response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+        return;
+    }
+
+    MYSQL_RES* res = dbcon.SelectQuery(
+        TEXT("SELECT JSON_OBJECT('idx', il.idx, 'device_name', d.name, 'device_environment', d.environment, 'inspection_name', i.name, 'success', IF(il.success = 1, true, false), 'create_time', il.create_time) \
+            FROM inspection_log il\
+            JOIN device d ON d.idx = il.device_idx\
+            JOIN inspection i ON i.idx = il.inspection_idx\
+            ORDER BY il.idx ASC LIMIT %d OFFSET %d;"),
+            limit, limit * (page - 1));
+
+    if (res == NULL) {
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+        response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+        return;
+    }
+
+    std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+    for (auto i : rows) {
+        jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+    }
+
+    jsonMessage["message"] = "Success";
+    response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
 }
 
 void CInspectionApi::GetInspectionLogDetail(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionInfo"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
+    bool error = false;
+    int idx = -1;
+
+    nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+
+    if (request.hasParam(":idx")) {
+        std::string message = request.param(":idx").as<std::string>();
+        if (std::regex_match(message, regexNumber))
+            idx = atoi(message.c_str());
+        else {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Parameter Errors", "idx must be number."} });
+            error = true;
+        }
+    }
+
+    if (error) {
+        response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+        return;
+    }
+
+    MYSQL_RES* res = dbcon.SelectQuery(
+        TEXT("SELECT JSON_OBJECT('idx', il.idx, 'device_name', d.name, 'device_environment', d.environment, 'inspection_name', i.name, 'result', il.result, 'success', IF(il.success = 1, true, false) , 'create_time', il.create_time)\ 
+            FROM inspection_log il\
+            JOIN device d ON d.idx = il.device_idx\
+            JOIN inspection i ON i.idx = il.inspection_idx\
+            WHERE il.idx = %d;"), idx);
+
+    if (res == NULL) {
+        jsonMessage["message"] = "Error";
+        jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+        response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+        return;
+    }
+
+    std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
+
+    for (auto i : rows) {
+        jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+    }
+
+    jsonMessage["message"] = "Success";
+    response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
 }
