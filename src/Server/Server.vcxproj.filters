@@ -8,6 +8,7 @@
     <ClInclude Include="RestApiServer.h" />
     <ClInclude Include="SampleRestApi.h" />
     <ClInclude Include="CDatabase.h" />
+    <ClInclude Include="myRestAPI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CMessage.cpp" />
@@ -17,5 +18,6 @@
     <ClCompile Include="SampleRestApi.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="CDatabase.cpp" />
+    <ClCompile Include="myRestAPI.cpp" />
   </ItemGroup>
 </Project>

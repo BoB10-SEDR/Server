@@ -19,10 +19,10 @@ public:
     ~CDatabase();
 
     MYSQL_RES* ExcuteQuery(const std::string& sql_query); 
-    static std::vector<MYSQL_FIELD*> GetFieldList(MYSQL_RES* res);
-    static std::vector<MYSQL_ROW> GetRowList(MYSQL_RES* res);
-    int LastResponsePK();
-    void ClearResponse(MYSQL_RES* res);
+    static std::vector<MYSQL_FIELD*> GetFieldList(MYSQL_RES* res); 
+    static std::vector<MYSQL_ROW> GetRowList(MYSQL_RES* res); //결과
+    int LastResponsePK(); //마지막 실행한 PK가져옴(FK로 사용)
+    void ClearResponse(MYSQL_RES* res); //응답 clear
 
     std::vector<std::vector<std::string>> GetQueryRow(); 
     void PrintRecords(const std::vector<std::vector<std::string>>& records); 
