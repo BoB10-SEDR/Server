@@ -128,6 +128,7 @@
     <ClCompile Include="CApi.cpp" />
     <ClCompile Include="CDatabase.cpp" />
     <ClCompile Include="CDeviceRestApi.cpp" />
+    <ClCompile Include="CInspectionApi.cpp" />
     <ClCompile Include="CMessage.cpp" />
     <ClCompile Include="CPolicyRestApi.cpp" />
     <ClCompile Include="CRestApiServer.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="CApi.h" />
     <ClInclude Include="CDatabase.h" />
     <ClInclude Include="CDeviceRestApi.h" />
+    <ClInclude Include="CInspectionApi.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CPolicyRestApi.h" />
     <ClInclude Include="CRestApiServer.h" />
