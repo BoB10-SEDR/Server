@@ -18,6 +18,7 @@ void CPolicyRestApi::Routing(Pistache::Rest::Router& router)
 void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("GetPolicyLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     bool error = false;
     int page = 1;
@@ -76,6 +77,7 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
 void CPolicyRestApi::GetPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("GetPolicyInfo"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     bool error = false;
     int idx = -1;
@@ -123,6 +125,7 @@ void CPolicyRestApi::GetPolicyInfo(const Pistache::Rest::Request& request, Pista
 void CPolicyRestApi::PostPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("PostPolicyInfo"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     try {
         nlohmann::json request_body = nlohmann::json::parse(request.body());
@@ -215,6 +218,7 @@ void CPolicyRestApi::PostPolicyInfo(const Pistache::Rest::Request& request, Pist
 void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("PutPolicyInfo"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     try {
         nlohmann::json request_body = nlohmann::json::parse(request.body());
@@ -338,6 +342,7 @@ void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pista
 void CPolicyRestApi::DeletePolicyInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("DeletePolicyInfo"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     try {
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
@@ -404,6 +409,7 @@ void CPolicyRestApi::DeletePolicyInfo(const Pistache::Rest::Request& request, Pi
 void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("PostPolicyActivate"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     try {
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
@@ -511,6 +517,7 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
 void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("PostPolicyInactivate"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     try {
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
@@ -621,6 +628,7 @@ void CPolicyRestApi::GetPolicyDownload(const Pistache::Rest::Request& request, P
 void CPolicyRestApi::GetPolicyAvailableDeviceLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CPolicyRestApi.cpp - [%s]"), TEXT("GetPolicyAvailableDeviceLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     try {
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
