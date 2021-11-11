@@ -129,6 +129,7 @@
     <ClCompile Include="CDatabase.cpp" />
     <ClCompile Include="CDeviceRestApi.cpp" />
     <ClCompile Include="CMessage.cpp" />
+    <ClCompile Include="CPolicyRestApi.cpp" />
     <ClCompile Include="CRestApiServer.cpp" />
     <ClCompile Include="CTestRestApi.cpp" />
     <ClCompile Include="main.cpp" />
@@ -140,9 +141,11 @@
     <ClInclude Include="CDatabase.h" />
     <ClInclude Include="CDeviceRestApi.h" />
     <ClInclude Include="CMessage.h" />
+    <ClInclude Include="CPolicyRestApi.h" />
     <ClInclude Include="CRestApiServer.h" />
     <ClInclude Include="CServer.h" />
     <ClInclude Include="CTestRestApi.h" />
+    <ClInclude Include="DataPattern.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">

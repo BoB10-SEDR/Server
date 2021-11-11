@@ -1,6 +1,7 @@
 #include "CRestApiServer.h"
 #include "CDeviceRestApi.h"
 #include "CTestRestApi.h"
+#include "CPolicyRestApi.h"
 
 extern ST_ENV env;
 
@@ -38,6 +39,7 @@ void CRestApiServer::Init()
 
 	apiList.push_back(new CDeviceRestApi());
 	apiList.push_back(new CTestRestApi());
+	apiList.push_back(new CPolicyRestApi());
 
 	SetupRoutes();
 }

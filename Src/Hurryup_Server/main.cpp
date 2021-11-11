@@ -41,8 +41,8 @@ int main(int argc, char* argv[])
 	RestApiServerManager()->Init();
 	std::future<void> restApiServer = std::async(std::launch::async, &CRestApiServer::Start, RestApiServerManager());
 
-	AgentServerManager()->Init();
-	std::future<void> agentServer = std::async(std::launch::async, &CAgentServer::Start, AgentServerManager());
+	//AgentServerManager()->Init();
+	//std::future<void> agentServer = std::async(std::launch::async, &CAgentServer::Start, AgentServerManager());
 
 	return 0;
 }
