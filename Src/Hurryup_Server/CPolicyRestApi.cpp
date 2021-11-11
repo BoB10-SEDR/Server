@@ -42,7 +42,7 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
             limit = atoi(message.c_str());
         else {
             jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "limit must be number."} });
+            jsonMessage["errors"].push_back({ {"Parameter Errors", "limit must be 2 digits number."} });
             error = true;
         }
     }
@@ -53,7 +53,7 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
     }
 
     MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', p.idx, 'main', main, 'sub', sub, 'classify', classify, 'name',NAME, 'description', description) FROM policy p JOIN security_category s ON p.security_category_idx = s.idx ORDER BY p.idx ASC LIMIT %d OFFSET %d;"),
+        TEXT("SELECT JSON_OBJECT('idx', p.idx, 'main', main, 'sub', sub, 'classify', classify, 'name',NAME, 'description', description) FROM policy p LEFT JOIN security_category s ON p.security_category_idx = s.idx ORDER BY p.idx ASC LIMIT %d OFFSET %d;"),
         limit, limit*(page -1));
     
     if (res == NULL) {
@@ -99,7 +99,7 @@ void CPolicyRestApi::GetPolicyInfo(const Pistache::Rest::Request& request, Pista
     }
 
     MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', p.idx, 'main', main, 'sub', sub, 'classify', classify, 'name',NAME, 'description', description, 'isfile', IF(isfile = 1, true, false), 'apply_content', apply_content, 'release_content', release_content) FROM policy p JOIN security_category s ON p.security_category_idx = s.idx WHERE p.idx = %d;"),
+        TEXT("SELECT JSON_OBJECT('idx', p.idx, 'main', main, 'sub', sub, 'classify', classify, 'name',NAME, 'description', description, 'isfile', IF(isfile = 1, true, false), 'apply_content', apply_content, 'release_content', release_content) FROM policy p LEFT JOIN security_category s ON p.security_category_idx = s.idx WHERE p.idx = %d;"),
         idx);
 
     if (res == NULL) {
@@ -201,14 +201,14 @@ void CPolicyRestApi::PostPolicyInfo(const Pistache::Rest::Request& request, Pist
 
         jsonMessage["message"] = "Success";
         jsonMessage["outputs"].push_back({ {"idx", idx} });
-        response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json")); 
+        response.send(Pistache::Http::Code::Created, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json")); 
     }
     catch (nlohmann::json::type_error& ex)
     {
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
         jsonMessage["message"] = "Error";
         jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
-        response.send(Pistache::Http::Code::Ok, ex.what());
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
     }
 }
 
@@ -331,7 +331,7 @@ void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pista
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
         jsonMessage["message"] = "Error";
         jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
-        response.send(Pistache::Http::Code::Ok, ex.what());
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
     }
 }
 
@@ -397,7 +397,7 @@ void CPolicyRestApi::DeletePolicyInfo(const Pistache::Rest::Request& request, Pi
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
         jsonMessage["message"] = "Error";
         jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
-        response.send(Pistache::Http::Code::Ok, ex.what());
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
     }
 }
 
@@ -504,7 +504,7 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
         jsonMessage["message"] = "Error";
         jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
-        response.send(Pistache::Http::Code::Ok, ex.what());
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
     }
 }
 
@@ -609,7 +609,7 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
         jsonMessage["message"] = "Error";
         jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
-        response.send(Pistache::Http::Code::Ok, ex.what());
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
     }
 }
 
@@ -668,6 +668,6 @@ void CPolicyRestApi::GetPolicyAvailableDeviceLists(const Pistache::Rest::Request
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
         jsonMessage["message"] = "Error";
         jsonMessage["errors"].push_back({ {"Internal Server Errors", ex.what()} });
-        response.send(Pistache::Http::Code::Ok, ex.what());
+        response.send(Pistache::Http::Code::Internal_Server_Error, ex.what());
     }
 }

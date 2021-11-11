@@ -9,6 +9,6 @@ class CApi
 {
 public:
 	CDatabase dbcon;
-	CApi() :dbcon("14.138.200.178", "bob", "bob10-sedr12!@", "33333", "hurryup_sedr") {}
+	CApi() :dbcon("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr") {}
 	virtual void Routing(ROUTER &router) = 0;
 };
