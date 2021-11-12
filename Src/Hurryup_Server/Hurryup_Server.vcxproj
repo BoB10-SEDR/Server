@@ -126,10 +126,12 @@
     <ClCompile Include="CAgentApi.cpp" />
     <ClCompile Include="CAgentServer.cpp" />
     <ClCompile Include="CApi.cpp" />
+    <ClCompile Include="CDashBoardRestApi.cpp" />
     <ClCompile Include="CDatabase.cpp" />
     <ClCompile Include="CDeviceRestApi.cpp" />
     <ClCompile Include="CInspectionApi.cpp" />
     <ClCompile Include="CMessage.cpp" />
+    <ClCompile Include="CMonitoringRestApi.cpp" />
     <ClCompile Include="CNetworkCategoryRestApi.cpp" />
     <ClCompile Include="CPolicyRestApi.cpp" />
     <ClCompile Include="CRestApiServer.cpp" />
@@ -141,10 +143,12 @@
     <ClInclude Include="CAgentApi.h" />
     <ClInclude Include="CAgentServer.h" />
     <ClInclude Include="CApi.h" />
+    <ClInclude Include="CDashBoardRestApi.h" />
     <ClInclude Include="CDatabase.h" />
     <ClInclude Include="CDeviceRestApi.h" />
     <ClInclude Include="CInspectionApi.h" />
     <ClInclude Include="CMessage.h" />
+    <ClInclude Include="CMonitoringRestApi.h" />
     <ClInclude Include="CNetworkCategoryRestApi.h" />
     <ClInclude Include="CPolicyRestApi.h" />
     <ClInclude Include="CRestApiServer.h" />
