@@ -1,4 +1,5 @@
 #include "CDashBoardRestApi.h"
+#include "Cutils.h"
 
 std::string CDashBoardRestApi::GetTimeStamp()
 {
@@ -26,7 +27,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
 
-    std::string cur = CDashBoardRestApi::GetTimeStamp();
+    std::string end = Cutils::GetTimeStamp();
     std::string start = "1970-01-01";
 
     int time = 5;
@@ -70,7 +71,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
                 WHERE TIMESTAMP('%s') <= TIMESTAMP(create_time) AND TIMESTAMP(create_time) <= TIMESTAMPADD(MINUTE, %d, '%s')\
                 GROUP BY status\
                 ORDER BY STATUS ASC;"),
-            start.c_str(), 0, cur.c_str());
+            start.c_str(), 0, end.c_str());
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";
@@ -102,7 +103,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
                 WHERE TIMESTAMP('%s') <= TIMESTAMP(create_time) AND TIMESTAMP(create_time) <= TIMESTAMPADD(MINUTE, %d, '%s')\
                 GROUP BY status\
                 ORDER BY STATUS ASC;"),
-        start.c_str(), -time, cur.c_str());
+        start.c_str(), -time, end.c_str());
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";
@@ -133,7 +134,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
             WHERE security_category_idx IS NOT NULL AND TIMESTAMP('%s') <= TIMESTAMP(create_time) AND TIMESTAMP(create_time) <= TIMESTAMPADD(MINUTE, %d, '%s')\
             GROUP BY security_category_idx\
         )a; "),
-        start.c_str(), 0, cur.c_str());
+        start.c_str(), 0, end.c_str());
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";
@@ -160,7 +161,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
             WHERE security_category_idx IS NOT NULL AND TIMESTAMP('%s') <= TIMESTAMP(create_time) AND TIMESTAMP(create_time) <= TIMESTAMPADD(MINUTE, %d, '%s')\
             GROUP BY security_category_idx\
         )a; "),
-        start.c_str(), -time, cur.c_str());
+        start.c_str(), -time, end.c_str());
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";
@@ -231,9 +232,8 @@ void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
 
-    std::string cur = CDashBoardRestApi::GetTimeStamp();
     std::string start = "1970-01-01";
-    std::string end = cur;
+    std::string end = Cutils::GetTimeStamp();
 
     int time = 5;
     bool error = false;
@@ -247,17 +247,6 @@ void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request
         else {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Parameter Errors", "start must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("end")) {
-        std::string message = request.query().get("end").value();
-        if (std::regex_match(message, regexDate))
-            end = message;
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "end must be Date Type."} });
             error = true;
         }
     }
@@ -325,12 +314,10 @@ void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Reque
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
 
-    std::string cur = CDashBoardRestApi::GetTimeStamp();
     std::string start = "1970-01-01";
-    std::string end = cur;
+    std::string end = CDashBoardRestApi::GetTimeStamp();
 
     bool error = false;
-    int time = 5;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
@@ -341,28 +328,6 @@ void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Reque
         else {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Parameter Errors", "start must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("end")) {
-        std::string message = request.query().get("end").value();
-        if (std::regex_match(message, regexDate))
-            end = message;
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "end must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("time")) {
-        std::string message = request.query().get("time").value();
-        if (std::regex_match(message, regexNumber))
-            time = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "time must be Number"} });
             error = true;
         }
     }
@@ -407,9 +372,8 @@ void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::R
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
 
-    std::string cur = CDashBoardRestApi::GetTimeStamp();
     std::string start = "1970-01-01";
-    std::string end = cur;
+    std::string end = Cutils::GetTimeStamp();
 
     int time = 5;
     bool error = false;
@@ -423,17 +387,6 @@ void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::R
         else {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Parameter Errors", "start must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("end")) {
-        std::string message = request.query().get("end").value();
-        if (std::regex_match(message, regexDate))
-            end = message;
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "end must be Date Type."} });
             error = true;
         }
     }
@@ -498,12 +451,9 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
 
-    std::string cur = CDashBoardRestApi::GetTimeStamp();
     std::string start = "1970-01-01";
-    std::string end = cur;
-
+    std::string end = Cutils::GetTimeStamp();
     bool error = false;
-    int time = 5;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
@@ -518,28 +468,6 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
         }
     }
 
-    if (request.query().has("end")) {
-        std::string message = request.query().get("end").value();
-        if (std::regex_match(message, regexDate))
-            end = message;
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "end must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("time")) {
-        std::string message = request.query().get("time").value();
-        if (std::regex_match(message, regexNumber))
-            time = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "time must be Number"} });
-            error = true;
-        }
-    }
-
     if (error) {
         response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
         return;
@@ -549,7 +477,7 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
 
     // 현재시간 까지 로그 통계 구하기
     MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT environment, CONCAT('[', GROUP_CONCAT(JSON_OBJECT(STATUS, avg_col)) ,']')\
+        TEXT("SELECT environment, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('status', STATUS, 'count', avg_col)) ,']')\
             FROM(\
                 SELECT Count(*) AS avg_col, STATUS, d.environment\
                 FROM log l\
@@ -586,53 +514,7 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
 void CDashBoardRestApi::GetDashBoardPolicyRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
-
-    std::string cur = CDashBoardRestApi::GetTimeStamp();
-    std::string start = "1970-01-01";
-    std::string end = cur;
-
-    bool error = false;
-    int time = 5;
-
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
-
-    if (request.query().has("start")) {
-        std::string message = request.query().get("start").value();
-        if (std::regex_match(message, regexDate))
-            start = message;
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "start must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("end")) {
-        std::string message = request.query().get("end").value();
-        if (std::regex_match(message, regexDate))
-            end = message;
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "end must be Date Type."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("time")) {
-        std::string message = request.query().get("time").value();
-        if (std::regex_match(message, regexNumber))
-            time = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "time must be Number"} });
-            error = true;
-        }
-    }
-
-    if (error) {
-        response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
-        return;
-    }
 
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };
 
