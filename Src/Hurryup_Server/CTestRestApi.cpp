@@ -39,7 +39,7 @@ void CTestRestApi::PostProcessListRestApi(const Pistache::Rest::Request& request
             response.send(Pistache::Http::Code::Ok, "Not Device");
         }
         else {
-            MessageManager()->PushSendMessage(socket_key, REQUEST, "/request/list/process", "");
+            MessageManager()->PushSendMessage(socket_key, PROCESS_LIST, "");
             response.send(Pistache::Http::Code::Ok, "Complete");
         }
     }

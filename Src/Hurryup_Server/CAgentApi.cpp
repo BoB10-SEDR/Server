@@ -30,17 +30,17 @@ int CAgentApi::GetDeviceId(int agentFd)
 	return deviceId;
 }
 
-void CAgentApi::Routing(std::map<std::tstring, void(CAgentApi::*)(int, std::tstring)> & router)
+void CAgentApi::Routing(std::map<OPCODE, void(CAgentApi::*)(int, std::tstring)> & router)
 {
-	router.insert({"/list/process", &CAgentApi::ResponseProcessList});
-	router.insert({"/list/filedescriptort", &CAgentApi::ResponseFileDescriptorList });
-	router.insert({"/monitoring/result", &CAgentApi::ResponseMonitoringResult });
-	router.insert({"/monitoring/log", &CAgentApi::ResponseMonitoringLog });
-	router.insert({"/device/info", &CAgentApi::ResponseDeviceInfo });
-	router.insert({"/device/dead", &CAgentApi::ResponseDeviceDead });
-	router.insert({"/module/info", &CAgentApi::ResponseModuleInfo });
-	router.insert({"/policy/result", &CAgentApi::ResponsePolicyResult });
-	router.insert({"/check/result", &CAgentApi::ResponseCheckResult });
+	router.insert({PROCESS_LIST, &CAgentApi::ResponseProcessList});
+	router.insert({FD_LIST, &CAgentApi::ResponseFileDescriptorList });
+	router.insert({MONITORING_RESULT, &CAgentApi::ResponseMonitoringResult });
+	router.insert({MONITORING_LOG, &CAgentApi::ResponseMonitoringLog });
+	router.insert({DEVICE, &CAgentApi::ResponseDeviceInfo });
+	router.insert({DEVICE_DEAD, &CAgentApi::ResponseDeviceDead });
+	router.insert({MODULE, &CAgentApi::ResponseModuleInfo });
+	router.insert({POLICY_RESULT, &CAgentApi::ResponsePolicyResult });
+	router.insert({INSPECTION_RESULT, &CAgentApi::ResponseCheckResult });
 }
 
 void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
@@ -209,7 +209,7 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 		category = std::stoi(row[0][0]);
 
 	if (category == -1) {
-		dbcon.InsertQuery(TEXT("INSERT INTO device(name, model_number, serial_number, ip, mac, architecture, os, live, update_time, socket_key) VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', 1, '%s', %d) ON DUPLICATE KEY UPDATE live = 1, update_time = '%s', socket_key = %d;"),
+		dbcon.InsertQuery(TEXT("INSERT INTO device(name, model_number, serial_number, ip, mac, architecture, os, live, update_time, socket) VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', 1, '%s', %d) ON DUPLICATE KEY UPDATE live = 1, update_time = '%s', socket = %d;"),
 			TEXT(deviceInfo.name.c_str()),
 			TEXT(deviceInfo.modelNumber.c_str()),
 			TEXT(deviceInfo.serialNumber.c_str()),
@@ -354,7 +354,7 @@ void CAgentApi::ResponsePolicyResult(int agentFd, std::tstring data)
 	core::ReadJsonFromString(&policyState, data);
 
 	//Save DataBase
-	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
+	core::Log_Debug(TEXT("Function.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Policy Check Complete"), agentFd);
 }
 void CAgentApi::ResponseCheckResult(int agentFd, std::tstring data)
@@ -365,6 +365,6 @@ void CAgentApi::ResponseCheckResult(int agentFd, std::tstring data)
 	core::ReadJsonFromString(&checkResult, data);
 
 	//Save DataBase
-	core::Log_Debug(TEXT("Function.cpp - [%s-%s] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
+	core::Log_Debug(TEXT("Function.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
 	core::Log_Info(TEXT("Function.cpp - [%s-%s]"), TEXT("Response Checklist Status Complete"), agentFd);
 }

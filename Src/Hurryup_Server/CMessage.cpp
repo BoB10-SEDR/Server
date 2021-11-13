@@ -8,48 +8,48 @@ CMessage::~CMessage()
 {
 }
 
-void CMessage::PushSendMessage(int agentSocket, PacketType type, std::tstring opcode, std::tstring message)
+void CMessage::PushSendMessage(int agentSocket, OPCODE opcode, std::tstring metaInfo)
 {
 	std::lock_guard<std::mutex> lock_guard(sendMessageMutex);
-	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(agentSocket, new ST_PACKET_INFO(SERVER, AGENT, type, opcode, message));
-	sendMessage.push(stServerPacketInfo);
+	ST_MESSAGE_INFO* stMessageInfo = new ST_MESSAGE_INFO(agentSocket, opcode, metaInfo);
+	sendMessage.push(stMessageInfo);
 }
 
-void CMessage::PushReceiveMessage(int agentSocket, ST_PACKET_INFO* stPacketInfo)
+void CMessage::PushReceiveMessage(int agentSocket, OPCODE opcode, std::tstring metaInfo)
 {
 	std::lock_guard<std::mutex> lock_guard(receiveMessageMutex);
-	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO(agentSocket, stPacketInfo);
-	receiveMessage.push(stServerPacketInfo);
+	ST_MESSAGE_INFO* stMessageInfo = new ST_MESSAGE_INFO(agentSocket, opcode, metaInfo);
+	receiveMessage.push(stMessageInfo);
 }
 
-ST_SERVER_PACKET_INFO* CMessage::PopSendMessage()
+ST_MESSAGE_INFO* CMessage::PopSendMessage()
 {
 	std::lock_guard<std::mutex> lock_guard(sendMessageMutex);
 
-	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO();
+	ST_MESSAGE_INFO* stMessageInfo = new ST_MESSAGE_INFO();
 
 	if (sendMessage.empty())
 		return NULL;
 
-	stServerPacketInfo = sendMessage.front();
+	stMessageInfo = sendMessage.front();
 	sendMessage.pop();
 
-	return stServerPacketInfo;
+	return stMessageInfo;
 }
 
-ST_SERVER_PACKET_INFO* CMessage::PopReceiveMessage()
+ST_MESSAGE_INFO* CMessage::PopReceiveMessage()
 {
 	std::lock_guard<std::mutex> lock_guard(receiveMessageMutex);
 
-	ST_SERVER_PACKET_INFO* stServerPacketInfo = new ST_SERVER_PACKET_INFO();
+	ST_MESSAGE_INFO* stMessageInfo = new ST_MESSAGE_INFO();
 
 	if (receiveMessage.empty())
 		return NULL;
 
-	stServerPacketInfo = receiveMessage.front();
+	stMessageInfo = receiveMessage.front();
 	receiveMessage.pop();
 
-	return stServerPacketInfo;
+	return stMessageInfo;
 }
 
 CMessage* CMessage::GetInstance()

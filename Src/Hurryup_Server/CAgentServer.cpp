@@ -70,8 +70,8 @@ void CAgentServer::Start()
 
 	SetupRoutes();
 
-	//std::future<void> send = std::async(std::launch::async, &CAgentServer::Send, AgentServerManager());
-	//std::future<void> receive = std::async(std::launch::async, &CAgentServer::Recv, AgentServerManager());
+	std::future<void> send = std::async(std::launch::async, &CAgentServer::Send, AgentServerManager());
+	std::future<void> receive = std::async(std::launch::async, &CAgentServer::Recv, AgentServerManager());
 	std::future<void> match = std::async(std::launch::async, &CAgentServer::MatchMessage, AgentServerManager());
 }
 
@@ -86,36 +86,37 @@ void CAgentServer::SetupRoutes()
 void CAgentServer::Send()
 {
 	core::Log_Debug(TEXT("CAgentServer.cpp - [%s]"), TEXT("Working SendMessage In Thread"));
-	ST_SERVER_PACKET_INFO* stServerPacketInfo;
+	ST_MESSAGE_INFO* stMessageInfo;
 
 	while (1) {
 		sleep(0);
-		stServerPacketInfo = MessageManager()->PopSendMessage();
+		stMessageInfo = MessageManager()->PopSendMessage();
 
-		if (stServerPacketInfo == NULL)
+		if (stMessageInfo == NULL)
 			continue;
 		
-		if (SearchAgent(stServerPacketInfo->agentSocket) == -1) {
-			core::Log_Warn(TEXT("CAgentServer.cpp - [%s] : %s"), TEXT("Agent Not Found"), stServerPacketInfo->agentSocket);
+		if (SearchAgent(stMessageInfo->agentSocket) == -1) {
+			core::Log_Warn(TEXT("CAgentServer.cpp - [%s] : %s"), TEXT("Agent Not Found"), stMessageInfo->agentSocket);
 			continue;
 		}
 
-		std::tstring jsPacketSend;
-		core::WriteJsonToString(stServerPacketInfo->stPacketInfo, jsPacketSend);
+		ST_NEW_PACKET_INFO* stPacketInfo = new ST_NEW_PACKET_INFO(stMessageInfo->opcode, stMessageInfo->metaInfo);
+		std::tstring jsPacketInfo;
+		core::WriteJsonToString(stPacketInfo, jsPacketInfo);
 		
-		std::tstring message = TEXT("BOBSTART") + jsPacketSend + TEXT("BOBEND");
-		int result = write(stServerPacketInfo->agentSocket, message.c_str(), message.length());
+		std::tstring message = TEXT("BOBSTART") + jsPacketInfo + TEXT("BOBEND");
+		int result = write(stMessageInfo->agentSocket, message.c_str(), message.length());
 
 		if (result == -1)
 			core::Log_Warn(TEXT("CAgentServer.cpp - [%s] : %d"), TEXT("Send Error Code"), errno);
 		else 
 		{
 			core::Log_Debug(TEXT("CAgentServer.cpp - [%s] : %d"), TEXT("Send Complete"), result);
-			core::Log_Debug(TEXT("CMessage.cpp - [%s] : %d -> %s"), TEXT("Send Message"), stServerPacketInfo->agentSocket, TEXT(jsPacketSend.c_str()));
+			core::Log_Debug(TEXT("CMessage.cpp - [%s] : %d -> %s"), TEXT("Send Message"), stMessageInfo->agentSocket, TEXT(stMessageInfo->metaInfo.c_str()));
 
 		}
-		free(stServerPacketInfo->stPacketInfo);
-		free(stServerPacketInfo);
+		delete stMessageInfo;
+		delete stPacketInfo;
 	}
 }
 
@@ -194,10 +195,12 @@ void CAgentServer::Recv()
 							if (start_location == -1 || end_location == -1)
 								break;
 
-							ST_PACKET_INFO* stPacketRead = new ST_PACKET_INFO();
-							core::ReadJsonFromString(stPacketRead, agentMessageBuffers[agentSocket].substr(start_location + 8, end_location - (start_location + 8)));
+							ST_NEW_PACKET_INFO* stPacketInfo = new ST_NEW_PACKET_INFO();
+							core::ReadJsonFromString(stPacketInfo, agentMessageBuffers[agentSocket].substr(start_location + 8, end_location - (start_location + 8)));
 
-							MessageManager()->PushReceiveMessage(agentSocket, stPacketRead);
+							MessageManager()->PushReceiveMessage(agentSocket, (OPCODE)stPacketInfo->opcode, stPacketInfo->data);
+							delete stPacketInfo;
+
 							agentMessageBuffers[agentSocket] = agentMessageBuffers[agentSocket].substr(end_location + 6);
 						}
 					}
@@ -212,21 +215,22 @@ void CAgentServer::MatchMessage()
 {
 	core::Log_Debug(TEXT("CAgentServer.cpp - [%s]"), TEXT("Working MatchReceiveMessage In Thread"));
 	
-	ST_SERVER_PACKET_INFO* stServerPacketInfo;
+	ST_MESSAGE_INFO* stMessageInfo;
 	CAgentApi* agentApi = new CAgentApi();
 
 	while (1)
 	{
 		sleep(0);
-		stServerPacketInfo = MessageManager()->PopReceiveMessage();
+		stMessageInfo = MessageManager()->PopReceiveMessage();
 
-		if (stServerPacketInfo == NULL)
+		if (stMessageInfo == NULL)
 			continue;
 	
-		core::Log_Debug(TEXT("CAgentServer.cpp - [%s] %s"), TEXT("Receive Packet"), TEXT(stServerPacketInfo->stPacketInfo->opcode));
+		core::Log_Debug(TEXT("CAgentServer.cpp - [%s] %d"), TEXT("Receive Packet"), TEXT(stMessageInfo->opcode));
 		// 받은 메세지를 free 해주기 위해서, 그냥 Cagent api 에서 받은 메세지 주소를 프리 처리하는게 좋을꺼 같다.
-		std::future<void> result = std::async(std::launch::async, router[stServerPacketInfo->stPacketInfo->opcode], agentApi, stServerPacketInfo->agentSocket, stServerPacketInfo->stPacketInfo->data);
+		std::future<void> result = std::async(std::launch::async, router[(OPCODE)stMessageInfo->opcode], agentApi, stMessageInfo->agentSocket, stMessageInfo->metaInfo);
 	}
+
 	free(agentApi);
 }
 
@@ -276,9 +280,7 @@ int CAgentServer::PopEpoll(int agentSocket)
 	if (epoll_ctl(epollFD, EPOLL_CTL_DEL, agentSocket, NULL) < 0)
 		core::Log_Warn(TEXT("CAgentServer.cpp - [%s] : [%d]"), TEXT("PopEpoll Fail"), errno);
 
-	ST_PACKET_INFO* info = new ST_PACKET_INFO(AGENT, SERVER, RESPONSE, "/device/dead", "");
-
-	MessageManager()->PushReceiveMessage(agentFd, info);
+	MessageManager()->PushReceiveMessage(agentFd, DEVICE_DEAD, "");
 	close(agentSocket);
 
 	agentMessageBuffers.erase(agentSocket);

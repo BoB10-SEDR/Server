@@ -303,7 +303,6 @@ void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request
     std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
     nlohmann::json result;
-    int total = 0;
 
     for (auto i : rows) {
         nlohmann::json tmp = nlohmann::json::parse(i[1]);
@@ -330,8 +329,8 @@ void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Reque
     std::string start = "1970-01-01";
     std::string end = cur;
 
-    int time = 5;
     bool error = false;
+    int time = 5;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
@@ -483,7 +482,6 @@ void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::R
     std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
     nlohmann::json result;
-    int total = 0;
 
     for (auto i : rows) {
         result["date"] = i[0];
@@ -504,8 +502,8 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
     std::string start = "1970-01-01";
     std::string end = cur;
 
-    int time = 5;
     bool error = false;
+    int time = 5;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
@@ -574,7 +572,6 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
     std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
     nlohmann::json result;
-    int total = 0;
 
     for (auto i : rows) {
         result["environment"] = i[0];
@@ -594,8 +591,8 @@ void CDashBoardRestApi::GetDashBoardPolicyRestApi(const Pistache::Rest::Request&
     std::string start = "1970-01-01";
     std::string end = cur;
 
-    int time = 5;
     bool error = false;
+    int time = 5;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
@@ -674,7 +671,6 @@ void CDashBoardRestApi::GetDashBoardPolicyRestApi(const Pistache::Rest::Request&
     std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
     nlohmann::json result;
-    int total = 0;
 
     for (auto i : rows) {
         jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
