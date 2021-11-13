@@ -17,8 +17,8 @@
 class CAgentServer : public CServer
 {
 private:
-	std::map<std::tstring, void(CAgentApi::*)(int, std::tstring)> router;
-	std::vector<CApi<std::map<std::tstring, void(CAgentApi::*)(int, std::tstring)>>*> apiList;
+	std::map<OPCODE, void(CAgentApi::*)(int, std::tstring)> router;
+	std::vector<CApi<std::map<OPCODE, void(CAgentApi::*)(int, std::tstring)>>*> apiList;
 
 	int serverSocket, epollFD;
 	struct sockaddr_in serverAddress;
@@ -38,6 +38,7 @@ public:
 	static CAgentServer* GetInstance(void);
 	void Send();
 	void Recv();
+	void FileSend();
 	void MatchMessage();
 
 	virtual void Init();

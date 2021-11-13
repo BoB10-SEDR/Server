@@ -126,28 +126,39 @@
     <ClCompile Include="CAgentApi.cpp" />
     <ClCompile Include="CAgentServer.cpp" />
     <ClCompile Include="CApi.cpp" />
+    <ClCompile Include="CDashBoardRestApi.cpp" />
     <ClCompile Include="CDatabase.cpp" />
     <ClCompile Include="CDeviceRestApi.cpp" />
     <ClCompile Include="CInspectionApi.cpp" />
     <ClCompile Include="CMessage.cpp" />
+    <ClCompile Include="CMonitoringRestApi.cpp" />
+    <ClCompile Include="CNetworkCategoryRestApi.cpp" />
     <ClCompile Include="CPolicyRestApi.cpp" />
     <ClCompile Include="CRestApiServer.cpp" />
+    <ClCompile Include="CSecurityCategoryRestApi.cpp" />
     <ClCompile Include="CTestRestApi.cpp" />
+    <ClCompile Include="Cutils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CAgentApi.h" />
     <ClInclude Include="CAgentServer.h" />
     <ClInclude Include="CApi.h" />
+    <ClInclude Include="CDashBoardRestApi.h" />
     <ClInclude Include="CDatabase.h" />
     <ClInclude Include="CDeviceRestApi.h" />
     <ClInclude Include="CInspectionApi.h" />
     <ClInclude Include="CMessage.h" />
+    <ClInclude Include="CMonitoringRestApi.h" />
+    <ClInclude Include="CNetworkCategoryRestApi.h" />
     <ClInclude Include="CPolicyRestApi.h" />
     <ClInclude Include="CRestApiServer.h" />
+    <ClInclude Include="CSecurityCategoryRestApi.h" />
     <ClInclude Include="CServer.h" />
     <ClInclude Include="CTestRestApi.h" />
+    <ClInclude Include="Cutils.h" />
     <ClInclude Include="DataPattern.h" />
+    <ClInclude Include="new_packet.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">

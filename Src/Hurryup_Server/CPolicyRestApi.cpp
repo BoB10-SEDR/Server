@@ -484,8 +484,6 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
             return;
         }
 
-        bool result = true;
-
         row = CDatabase::GetRowList(res);
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
@@ -498,7 +496,7 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
         std::tstring jsPacketSend;
         core::WriteJsonToString(&policyInfo, jsPacketSend);
 
-        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/policy/activate", jsPacketSend);
+        MessageManager()->PushSendMessage(agentSocket, POLICY_INACTIVATE, jsPacketSend);
 
         std::cout << jsPacketSend << std::endl;
 
@@ -592,8 +590,6 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
             return;
         }
 
-        bool result = true;
-
         row = CDatabase::GetRowList(res);
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
@@ -606,7 +602,7 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
         std::tstring jsPacketSend;
         core::WriteJsonToString(&policyInfo, jsPacketSend);
 
-        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/policy/inactivate", jsPacketSend);
+        MessageManager()->PushSendMessage(agentSocket, POLICY_ACTIVATE, jsPacketSend);
 
         jsonMessage["message"] = "Success";
         response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));

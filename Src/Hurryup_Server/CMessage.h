@@ -3,13 +3,11 @@
 #include <queue>
 #include <mutex>
 
-
-
 class CMessage
 {
 private:
-	std::queue<ST_SERVER_PACKET_INFO*> receiveMessage;
-	std::queue<ST_SERVER_PACKET_INFO*> sendMessage;
+	std::queue<ST_MESSAGE_INFO*> receiveMessage;
+	std::queue<ST_MESSAGE_INFO*> sendMessage;
 	std::mutex receiveMessageMutex;
 	std::mutex sendMessageMutex;
 
@@ -17,10 +15,10 @@ private:
 	~CMessage();
 public:
 	static CMessage* GetInstance(void);;
-	void PushSendMessage(int agentSocket, PacketType type, std::tstring opcode, std::tstring message);
-	void PushReceiveMessage(int agentSocket, ST_PACKET_INFO* stPacketInfo);
-	ST_SERVER_PACKET_INFO* PopSendMessage();
-	ST_SERVER_PACKET_INFO* PopReceiveMessage();
+	void PushSendMessage(int agentSocket, OPCODE opcode, std::tstring metaInfo);
+	void PushReceiveMessage(int agentSocket, OPCODE opcode, std::tstring metaInfo);
+	ST_MESSAGE_INFO* PopSendMessage();
+	ST_MESSAGE_INFO* PopReceiveMessage();
 };
 
 inline CMessage* MessageManager()

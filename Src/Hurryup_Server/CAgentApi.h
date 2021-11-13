@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "CApi.h"
 
-class CAgentApi : public::CApi<std::map<std::tstring, void(CAgentApi::*)(int, std::tstring)>>
+class CAgentApi : public::CApi<std::map<OPCODE, void(CAgentApi::*)(int, std::tstring)>>
 {
 public:
-	void Routing(std::map<std::tstring, void(CAgentApi::*)(int, std::tstring)> & router);
+	void Routing(std::map<OPCODE, void(CAgentApi::*)(int, std::tstring)> & router);
 	void ResponseProcessList(int agentFd, std::tstring data);
 	void ResponseFileDescriptorList(int agentFd, std::tstring data);
 	void ResponseMonitoringResult(int agentFd, std::tstring data);

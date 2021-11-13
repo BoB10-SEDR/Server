@@ -922,8 +922,6 @@ void CInspectionApi::PostInspectionActivate(const Pistache::Rest::Request& reque
             return;
         }
 
-        bool result = true;
-
         row = CDatabase::GetRowList(res);
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
@@ -937,7 +935,7 @@ void CInspectionApi::PostInspectionActivate(const Pistache::Rest::Request& reque
         //std::tstring jsPacketSend;
         //core::WriteJsonToString(&policyInfo, jsPacketSend);
 
-        MessageManager()->PushSendMessage(agentSocket, REQUEST, "/inspection/activate", row[0][0]);
+        //MessageManager()->PushSendMessage(agentSocket, INSPECTION_ACTIVATE, row[0][0]);
 
         jsonMessage["message"] = "Success";
         response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
@@ -1156,7 +1154,7 @@ void CInspectionApi::GetInspectionLogDetail(const Pistache::Rest::Request& reque
     }
 
     MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', il.idx, 'device_name', d.name, 'device_environment', d.environment, 'inspection_name', i.name, 'result', il.result, 'success', IF(il.success = 1, true, false) , 'create_time', il.create_time)\ 
+        TEXT("SELECT JSON_OBJECT('idx', il.idx, 'device_name', d.name, 'device_environment', d.environment, 'inspection_name', i.name, 'result', il.result, 'success', IF(il.success = 1, true, false) , 'create_time', il.create_time)\
             FROM inspection_log il\
             JOIN device d ON d.idx = il.device_idx\
             JOIN inspection i ON i.idx = il.inspection_idx\
