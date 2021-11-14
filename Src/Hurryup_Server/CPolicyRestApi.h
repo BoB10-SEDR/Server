@@ -19,5 +19,6 @@ private:
 	void PostPolicyInactivate(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 	void GetPolicyDownload(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 	void GetPolicyAvailableDeviceLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+	void GetPolicyActivateDeviceLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 };
 
