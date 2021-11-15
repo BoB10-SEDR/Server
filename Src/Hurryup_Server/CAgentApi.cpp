@@ -185,8 +185,8 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 	std::tstring servceList;
 	std::tstring connectMethod;
 
-	ST_NEW_VECTOR_DATABASE<ST_NEW_NETWORK_INTERFACE_INFO> stNetworkInfo("NetworkInfo", info.metaInfo.networkInfo);
-	ST_NEW_VECTOR_DATABASE<ST_NEW_SERVICE_INFO> stServiceInfo("ServiceInfo", info.metaInfo.serviceList);
+	ST_NEW_VECTOR_DATABASE<ST_NEW_NETWORK_INTERFACE_INFO> stNetworkInfo("network_info", info.metaInfo.networkInfo);
+	ST_NEW_VECTOR_DATABASE<ST_NEW_SERVICE_INFO> stServiceInfo("service_info", info.metaInfo.serviceList);
 
 	core::WriteJsonToString(&stNetworkInfo, networkInfo);
 	core::WriteJsonToString(&info.metaInfo.osInfo, osInfo);
