@@ -155,7 +155,8 @@ void CDeviceRestApi::PostDeviceInfo(const Pistache::Rest::Request& request, Pist
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
         bool error = false;
-        std::vector<std::string> column = { "name", "model_number", "serial_number", "environment", "network_info",  "os_info", "service_list", "connect_method"};
+        std::vector<std::string> column = { "name", "model_name", "category", "network", "environment"};
+        CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
         for (auto i : column)
         {
@@ -172,28 +173,48 @@ void CDeviceRestApi::PostDeviceInfo(const Pistache::Rest::Request& request, Pist
             return;
         }
 
-        nlohmann::json network_info = request_body.at("network_info");
-        nlohmann::json os_info = request_body.at("os_info");
-        nlohmann::json service_list = request_body.at("service_list");
-        nlohmann::json connect_method = request_body.at("connect_method");
+        //TODO :: Serial_Number 생성 필요
+        std::tstring serial_number;
 
-        int idx = -1;
-        idx = dbcon.InsertQuery(TEXT("INSERT INTO `device` (`name`, `model_number`, `serial_number`, `device_category_idx`, `environment`, `network_info`, `os_info`, `service_list`, `connect_method`, `update_time`)\
-		VALUES('%s', '%s', '%s', (SELECT device_model_category.device_category_idx\
-			FROM device_model_category\
-			WHERE device_model_category.model_number = '%s'), '%s', '%s', '%s', '%s', '%s', '%s')\
-		ON DUPLICATE KEY UPDATE `update_time` = '%s'"),
-            TEXT(request_body.at("name").get_ref<const nlohmann::json::string_t&>().c_str()),
-            TEXT(request_body.at("model_number").get_ref<const nlohmann::json::string_t&>().c_str()),
-            TEXT(request_body.at("serial_number").get_ref<const nlohmann::json::string_t&>().c_str()),
-            TEXT(request_body.at("model_number").get_ref<const nlohmann::json::string_t&>().c_str()),
-            TEXT(request_body.at("environment").get_ref<const nlohmann::json::string_t&>().c_str()),
-            TEXT(network_info.dump().c_str()),
-            TEXT(os_info.dump().c_str()),
-            TEXT(service_list.dump().c_str()),
-            TEXT(connect_method.dump().c_str()),
-            TEXT(Cutils::GetTimeStamp().c_str()),
-            TEXT(Cutils::GetTimeStamp().c_str())
+        int category = db.InsertQuery(TEXT("INSERT INTO `device_category` (`name`, `agent`) values ('%s', 0) ON DUPLICATE KEY UPDATE `idx`=`idx`;"), TEXT(request_body.at("category").get_ref<const nlohmann::json::string_t&>().c_str()));
+
+        if (category == -1) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        int network = db.InsertQuery(TEXT("INSERT INTO `network_category` (`name`) values ('%s') ON DUPLICATE KEY UPDATE `idx`=`idx`;"), TEXT(request_body.at("network").get_ref<const nlohmann::json::string_t&>().c_str()));
+
+        if (network == -1) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        int environment = db.InsertQuery(TEXT("INSERT INTO `environment` (`name`) values ('%s') ON DUPLICATE KEY UPDATE `idx`=`idx`;"), TEXT(request_body.at("environment").get_ref<const nlohmann::json::string_t&>().c_str()));
+
+        if (environment == -1) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        int idx = db.InsertQuery(TEXT("INSERT INTO `device` (`name`, `model_name`, `serial_number`, `device_category_idx`, `network_category_idx`, `environment_idx`, `update_time`)\
+                        VALUES('%s', '%s', '%s',\
+                        (SELECT `idx` FROM `device_category` WHERE `name` = '%s' AND `agent` = 0),\
+                        (SELECT `idx` FROM `network_category` WHERE `name` = '%s'),\
+                        (SELECT `idx` FROM `environment` WHERE `name` = '%s'), '%s'); "),
+                TEXT(request_body.at("name").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("model_name").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(Cutils::GetTimeStamp().c_str()),
+                TEXT(request_body.at("category").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("network").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(request_body.at("environment").get_ref<const nlohmann::json::string_t&>().c_str()),
+                TEXT(Cutils::GetTimeStamp().c_str())
         );
 
         if (idx == -1) {
@@ -369,45 +390,11 @@ void CDeviceRestApi::GetDeviceCategoryLists(const Pistache::Rest::Request& reque
     core::Log_Debug(TEXT("CDeviceRestApi.cpp - [%s]"), TEXT("GetDeviceCategoryLists"));
     response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
-    bool error = false;
-    int page = 1;
-    int limit = 20;
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
-    if (request.query().has("page")) {
-        std::string message = request.query().get("page").value();
-        if (std::regex_match(message, regexNumber))
-            page = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "page must be number."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("limit")) {
-        std::string message = request.query().get("limit").value();
-        if (std::regex_match(message, regexLimit))
-            limit = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "limit must be 2 digits number."} });
-            error = true;
-        }
-    }
-
-    if (error) {
-        response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
-        return;
-    }
-
-    MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', dc.idx, 'name', dc.name, 'model_number', dmc.model_number)\
-            FROM device_category dc\
-            JOIN device_model_category dmc\
-            ON dc.idx = dmc.device_category_idx\
-            ORDER BY idx ASC LIMIT %d OFFSET %d;"),
-        limit, limit * (page - 1));
+    MYSQL_RES* res = db.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', idx, 'name', name) FROM `device_category` WHERE `agent` = 0 ORDER BY `idx` ASC"));
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";

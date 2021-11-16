@@ -129,6 +129,7 @@
     <ClCompile Include="CDashBoardRestApi.cpp" />
     <ClCompile Include="CDatabase.cpp" />
     <ClCompile Include="CDeviceRestApi.cpp" />
+    <ClCompile Include="CEnvironmentRestApi.cpp" />
     <ClCompile Include="CInspectionApi.cpp" />
     <ClCompile Include="CMessage.cpp" />
     <ClCompile Include="CMonitoringRestApi.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="CDashBoardRestApi.h" />
     <ClInclude Include="CDatabase.h" />
     <ClInclude Include="CDeviceRestApi.h" />
+    <ClInclude Include="CEnvironmentRestApi.h" />
     <ClInclude Include="CInspectionApi.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CMonitoringRestApi.h" />
