@@ -25,6 +25,7 @@ void CInspectionApi::Routing(Pistache::Rest::Router& router)
 void CInspectionApi::GetInspectionWorkbookLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionWorkbookLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     bool error = false;
     int page = 1;
@@ -449,6 +450,7 @@ void CInspectionApi::DeleteInspectionWorkbookInfo(const Pistache::Rest::Request&
 void CInspectionApi::GetInspectionLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     bool error = false;
     int page = 1;
@@ -1068,6 +1070,7 @@ void CInspectionApi::GetInspectionAvailablePolicyLists(const Pistache::Rest::Req
 void CInspectionApi::GetInspectionLogLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CInspectionApi.cpp - [%s]"), TEXT("GetInspectionLogLists"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     bool error = false;
     int page = 1;

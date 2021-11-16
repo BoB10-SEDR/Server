@@ -13,7 +13,7 @@ void CPolicyRestApi::Routing(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Post(router, "/v1/policies/:idx/inactivate/:device_idx", Pistache::Rest::Routes::bind(&CPolicyRestApi::PostPolicyInactivate, this));
     Pistache::Rest::Routes::Get(router, "/v1/policies/:idx/download", Pistache::Rest::Routes::bind(&CPolicyRestApi::GetPolicyDownload, this));
     Pistache::Rest::Routes::Get(router, "/v1/policies/:idx/devices", Pistache::Rest::Routes::bind(&CPolicyRestApi::GetPolicyAvailableDeviceLists, this));
-    Pistache::Rest::Routes::Get(router, "/v1/policies/:idx/activate", Pistache::Rest::Routes::bind(&CPolicyRestApi::GetPolicyActivateDeviceLists, this));
+    //Pistache::Rest::Routes::Get(router, "/v1/policies/:idx/activate", Pistache::Rest::Routes::bind(&CPolicyRestApi::GetPolicyActivateDeviceLists, this));
 }
 
 void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
@@ -67,6 +67,8 @@ void CPolicyRestApi::GetPolicyLists(const Pistache::Rest::Request& request, Pist
 
     std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
+    
+
     for (auto i : rows) {
         jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
     }
@@ -114,6 +116,7 @@ void CPolicyRestApi::GetPolicyInfo(const Pistache::Rest::Request& request, Pista
     
     std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
+    
 
     for (auto i : rows) {
         jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
@@ -264,6 +267,8 @@ void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pista
             return;
         }
 
+        
+
         res = dbcon.SelectQuery(TEXT("SELECT idx FROM security_category where main='%s' and sub='%s';"),
             TEXT(request_body.at("main").get_ref<const nlohmann::json::string_t&>().c_str()),
             TEXT(request_body.at("sub").get_ref<const nlohmann::json::string_t&>().c_str()));
@@ -274,6 +279,8 @@ void CPolicyRestApi::PutPolicyInfo(const Pistache::Rest::Request& request, Pista
             response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
             return;
         }
+
+        
 
         auto argument = request_body.at("argument").get_ref<const nlohmann::json::array_t&>();
         std::ostringstream strArgument;
@@ -363,6 +370,8 @@ void CPolicyRestApi::DeletePolicyInfo(const Pistache::Rest::Request& request, Pi
             return;
         }
 
+        
+
         bool result = true;
 
         result = dbcon.DeleteQuery(TEXT("DELETE FROM policy where idx = %d;"), idx);
@@ -441,6 +450,8 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
 
         std::vector<MYSQL_ROW> row = CDatabase::GetRowList(res);
 
+        
+
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Not_Found", "Device Is Not Exisit"} });
@@ -468,6 +479,8 @@ void CPolicyRestApi::PostPolicyActivate(const Pistache::Rest::Request& request, 
         }
 
         row = CDatabase::GetRowList(res);
+        
+
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Not_Found", "Policy Is Not Exisit"} });
@@ -570,6 +583,8 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
 
         std::vector<MYSQL_ROW> row = CDatabase::GetRowList(res);
 
+        
+
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Not_Found", "Device Is Not Exisit"} });
@@ -597,6 +612,8 @@ void CPolicyRestApi::PostPolicyInactivate(const Pistache::Rest::Request& request
         }
 
         row = CDatabase::GetRowList(res);
+        
+
         if (row.size() == 0) {
             jsonMessage["message"] = "Error";
             jsonMessage["errors"].push_back({ {"Not_Found", "Policy Is Not Exisit"} });
@@ -655,7 +672,16 @@ void CPolicyRestApi::GetPolicyAvailableDeviceLists(const Pistache::Rest::Request
             return;
         }
 
-        MYSQL_RES * res = dbcon.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', d.idx, 'name', d.name) FROM device_recommand dr JOIN policy p ON p.security_category_idx = dr.security_category_idx join device d ON d.device_category_idx = dr.device_category_idx  WHERE p.idx = %d;"), idx);
+        nlohmann::json devices = { {"recommend",nlohmann::json::array()}, {"activate", nlohmann::json::array()} };
+
+        
+        CDatabase* tmp = new CDatabase("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
+
+        MYSQL_RES * res = tmp->SelectQuery(TEXT("SELECT JSON_OBJECT('idx', d.idx, 'name', d.name,  'model_number', d.model_number, 'serial_number', d.serial_number)\
+                            FROM device d\
+                            JOIN device_recommand dr\
+                            ON d.device_category_idx = dr.device_category_idx\
+                            WHERE dr.security_category_idx IN(SELECT p.security_category_idx FROM policy p WHERE p.idx = %d)"), idx);
 
         if (res == NULL) {
             jsonMessage["message"] = "Error";
@@ -667,8 +693,30 @@ void CPolicyRestApi::GetPolicyAvailableDeviceLists(const Pistache::Rest::Request
         std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
 
         for (auto i : rows) {
-            jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));
+            devices["recommend"].push_back(nlohmann::json::parse(i[0]));
         }
+
+        res = tmp->SelectQuery(TEXT("SELECT JSON_OBJECT('idx', d.idx, 'name', d.name, 'model_number', d.model_number, 'serial_number', d.serial_number)\
+            FROM	device d\
+            JOIN device_policy dp ON dp.device_idx = d.idx\
+            WHERE dp.policy_idx = %d AND dp.activate = 1"), idx);
+
+        if (res == NULL) {
+            jsonMessage["message"] = "Error";
+            jsonMessage["errors"].push_back({ {"Internal Server Errors", "Database Errors"} });
+            response.send(Pistache::Http::Code::Internal_Server_Error, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
+            return;
+        }
+
+        rows = CDatabase::GetRowList(res);
+
+        for (auto i : rows) {
+            devices["activate"].push_back(nlohmann::json::parse(i[0]));
+        }
+
+        delete tmp;
+
+        jsonMessage["outputs"].push_back(devices);
 
         jsonMessage["message"] = "Success";
         response.send(Pistache::Http::Code::Ok, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
@@ -724,6 +772,7 @@ void CPolicyRestApi::GetPolicyActivateDeviceLists(const Pistache::Rest::Request&
         }
 
         std::vector<MYSQL_ROW> rows = CDatabase::GetRowList(res);
+
 
         for (auto i : rows) {
             jsonMessage["outputs"].push_back(nlohmann::json::parse(i[0]));

@@ -183,7 +183,7 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 	std::tstring networkInfo;
 	std::tstring osInfo;
 	std::tstring servceList;
-	std::tstring connectMethod;
+	std::tstring connectMethod = "[]";
 
 	ST_NEW_VECTOR_DATABASE<ST_NEW_NETWORK_INTERFACE_INFO> stNetworkInfo("network_info", info.metaInfo.networkInfo);
 	ST_NEW_VECTOR_DATABASE<ST_NEW_SERVICE_INFO> stServiceInfo("service_info", info.metaInfo.serviceList);
@@ -191,6 +191,7 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 	core::WriteJsonToString(&stNetworkInfo, networkInfo);
 	core::WriteJsonToString(&info.metaInfo.osInfo, osInfo);
 	core::WriteJsonToString(&stServiceInfo, servceList);
+
 
 	dbcon.InsertQuery(TEXT("INSERT INTO `device` (`name`, `model_number`, `serial_number`, `device_category_idx`, `network_info`, `os_info`, `service_list`, `connect_method`, `live`, `update_time`, `socket`)\
 		VALUES('%s', '%s', '%s', (SELECT device_model_category.device_category_idx\

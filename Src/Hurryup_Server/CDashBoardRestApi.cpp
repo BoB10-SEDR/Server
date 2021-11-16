@@ -26,6 +26,7 @@ void CDashBoardRestApi::Routing(Pistache::Rest::Router& router)
 void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     std::string end = Cutils::GetTimeStamp();
     std::string start = "1970-01-01";
@@ -231,6 +232,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
 void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     std::string start = "1970-01-01";
     std::string end = Cutils::GetTimeStamp();
@@ -313,6 +315,7 @@ void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request
 void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     std::string start = "1970-01-01";
     std::string end = CDashBoardRestApi::GetTimeStamp();
@@ -371,6 +374,7 @@ void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Reque
 void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     std::string start = "1970-01-01";
     std::string end = Cutils::GetTimeStamp();
@@ -450,6 +454,7 @@ void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::R
 void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     std::string start = "1970-01-01";
     std::string end = Cutils::GetTimeStamp();
@@ -514,6 +519,8 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
 void CDashBoardRestApi::GetDashBoardPolicyRestApi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     core::Log_Debug(TEXT("CDashBoardRestApi.cpp - [%s]"), TEXT("GetDashBoardStatisticsRestApi"));
+    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
+
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };

@@ -23,15 +23,12 @@ private:
 	void GetDeviceCount(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceUnregistedLists(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceHaveModules(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
-	void GetAllDeviceStatistics(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceStatistics(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
-	void GetAllDeviceLogsAttack(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceLogsAttack(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceHavePolicy(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceActivatePolicy(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceInactivatePolicy(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceRecommandPolicy(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
-	void GetAllDeviceLogs(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceLogs(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceRecommandInspection(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
 	void GetDeviceLive(const Pistache::Rest::Request & request, Pistache::Http::ResponseWriter response);
