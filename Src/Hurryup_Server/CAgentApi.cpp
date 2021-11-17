@@ -183,7 +183,6 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 	std::tstring networkInfo;
 	std::tstring osInfo;
 	std::tstring servceList;
-	std::tstring connectMethod = "[]";
 
 	ST_NEW_VECTOR_DATABASE<ST_NEW_NETWORK_INTERFACE_INFO> stNetworkInfo("network_info", info.metaInfo.networkInfo);
 	ST_NEW_VECTOR_DATABASE<ST_NEW_SERVICE_INFO> stServiceInfo("service_info", info.metaInfo.serviceList);
@@ -192,49 +191,43 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 	core::WriteJsonToString(&info.metaInfo.osInfo, osInfo);
 	core::WriteJsonToString(&stServiceInfo, servceList);
 
+	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
-	dbcon.InsertQuery(TEXT("INSERT INTO `device` (`name`, `model_number`, `serial_number`, `device_category_idx`, `network_info`, `os_info`, `service_list`, `connect_method`, `live`, `update_time`, `socket`)\
-		VALUES('%s', '%s', '%s', (SELECT device_model_category.device_category_idx\
-			FROM device_model_category\
-			WHERE device_model_category.model_number = '%s'), '%s', '%s', '%s', '%s', 1, '%s', %d)\
-		ON DUPLICATE KEY UPDATE `update_time` = '%s', `socket`= %d, `live`=1"),
-		TEXT(info.metaInfo.name.c_str()),
-		TEXT(info.metaInfo.modelNumber.c_str()),
-		TEXT(info.serialNumber.c_str()),
-		TEXT(info.metaInfo.modelNumber.c_str()),
+	//TODO :: string 길이 초과 문제로 없으면 Insert 있으면 UPdate를 진행할 수 없다. Select 후 Insert or Update로 방법 우회 필요
+	bool result = db.UpdateQuery(TEXT("UPDATE `device`\
+		SET `network_info` = '%s', `os_info` = '%s', `service_list` = '%s', `connect_method` = '%s', `live` = 1, `socket` = %d, `update_time` = '%s'\
+		WHERE `serial_number` = '%s'"),
 		TEXT(networkInfo.c_str()),
 		TEXT(osInfo.c_str()),
 		TEXT(servceList.c_str()),
-		TEXT(connectMethod.c_str()),
-		TEXT(info.timestamp.c_str()),
+		TEXT(info.metaInfo.connectMethod.c_str()),
 		agentFd,
 		TEXT(info.timestamp.c_str()),
-		agentFd
+		TEXT(info.serialNumber.c_str())
 	);
 
-	if (dbcon.GetLastError() == NULL)
-	{
-		core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
+	if (!result) {
+		core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(db.GetLastError()));
 		return;
 	}
 
 	//Save DataBase
-	core::Log_Debug(TEXT("Function.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
+	core::Log_Debug(TEXT("Function.cpp - [%s-%d]"), TEXT("Save DataBase"), agentFd);
 	core::Log_Info(TEXT("Function.cpp - [%s-%d]"), TEXT("Response Device Info Complete"), agentFd);
 }
 
 void CAgentApi::ResponseDeviceDead(int agentFd, std::tstring data)
 {
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response UpdateDeviceLive"), agentFd);
+	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
-	dbcon.UpdateQuery(TEXT("UPDATE device SET update_time='%s', socket=0, live=0 WHERE socket=%d;"),
+	bool result = db.UpdateQuery(TEXT("UPDATE device SET update_time='%s', socket=0, live=0 WHERE socket=%d;"),
 		TEXT(Cutils::GetTimeStamp().c_str()),
 		agentFd
 	);
 
-	if (dbcon.GetLastError() == NULL)
-	{
-		core::Log_Error(TEXT("CAgentApi.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
+	if (!result) {
+		core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(db.GetLastError()));
 		return;
 	}
 

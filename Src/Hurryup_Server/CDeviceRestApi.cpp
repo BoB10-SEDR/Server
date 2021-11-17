@@ -39,6 +39,7 @@ void CDeviceRestApi::GetDeviceLists(const Pistache::Rest::Request& request, Pist
     int limit = 20;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("page")) {
         std::string message = request.query().get("page").value();
@@ -67,12 +68,15 @@ void CDeviceRestApi::GetDeviceLists(const Pistache::Rest::Request& request, Pist
         return;
     }
 
-    MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', d.idx, 'category', dc.name, 'name', d.NAME, 'model_number', d.model_number, 'serial_number', serial_number, 'live', IF(d.live = 1,TRUE, FALSE), 'environment', d.environment, 'network_info', JSON_EXTRACT(network_info, '$.network_info'), 'os_info', JSON_EXTRACT(os_info, '$.os_info'), 'service_list', JSON_EXTRACT(service_list, '$.service_list'), 'connect_method', JSON_EXTRACT(connect_method, '$.connect_method') )\
-            FROM device d\
-            JOIN device_category dc\
-            ON d.device_category_idx = dc.idx\
-            ORDER BY d.idx ASC LIMIT %d OFFSET %d;\
+    MYSQL_RES* res = db.SelectQuery(
+        TEXT("SELECT JSON_OBJECT('idx', `device`.`idx`, 'name', `device`.`name` ,'model_name', `device`.`model_name`, 'serial_number', `device`.`serial_number`,\
+            'environment', `environment`.`name`, 'category', `device_category`.`name`, 'network', `network_category`.`name`,\
+            'live', IF(`device`.`live` = 1, TRUE, FALSE), 'update_time', `device`.`update_time`)\
+            FROM `device`\
+            LEFT JOIN `device_category` ON `device_category`.`idx` = `device`.`device_category_idx`\
+            LEFT JOIN `network_category` ON `network_category`.`idx` = `device`.`network_category_idx`\
+            LEFT JOIN `environment` ON `environment`.`idx` = `device`.`environment_idx`\
+            ORDER BY `device`.`idx` ASC LIMIT %d OFFSET %d;\
             "),
         limit, limit * (page - 1));
 
@@ -102,6 +106,7 @@ void CDeviceRestApi::GetDeviceInfo(const Pistache::Rest::Request& request, Pista
     int idx = -1;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.hasParam(":idx")) {
         std::string message = request.param(":idx").as<std::string>();
@@ -119,14 +124,16 @@ void CDeviceRestApi::GetDeviceInfo(const Pistache::Rest::Request& request, Pista
         return;
     }
 
-    MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', d.idx, 'category', dc.name, 'name', d.NAME, 'model_number', d.model_number, 'serial_number', serial_number, 'live', IF(d.live = 1,TRUE, FALSE), 'environment', d.environment, 'network_info', JSON_EXTRACT(network_info, '$.network_info'), 'os_info', JSON_EXTRACT(os_info, '$.os_info'), 'service_list', JSON_EXTRACT(service_list, '$.service_list'), 'connect_method', JSON_EXTRACT(connect_method, '$.connect_method') )\
-            FROM device d\
-            JOIN device_category dc\
-            ON d.device_category_idx = dc.idx\
-            WHERE d.idx = %d;\
-            "),
-        idx);
+    MYSQL_RES* res = db.SelectQuery(
+        TEXT("SELECT JSON_OBJECT('idx', `device`.`idx`, 'name', `device`.`name` ,'model_name', `device`.`model_name`, 'serial_number', `device`.`serial_number`,\
+            'environment', `environment`.`name`, 'category', `device_category`.`name`, 'network', `network_category`.`name`,\
+            'live', IF(`device`.`live` = 1, TRUE, FALSE), 'update_time', `device`.`update_time`,\
+            'network_info', JSON_EXTRACT(`device`.`network_info`, '$.network_info'), 'os_info', JSON_EXTRACT(`device`.`os_info`, '$'), 'service_list', JSON_EXTRACT(`device`.`service_list`, '$.service_info'), 'connect_method', JSON_EXTRACT(`device`.`connect_method`, '$'))\
+            FROM `device`\
+            LEFT JOIN `device_category` ON `device_category`.`idx` = `device`.`device_category_idx`\
+            LEFT JOIN `network_category` ON `network_category`.`idx` = `device`.`network_category_idx`\
+            LEFT JOIN `environment` ON `environment`.`idx` = `device`.`environment_idx`\
+            WHERE `device`.`idx` = %d"), idx);
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";
@@ -173,9 +180,6 @@ void CDeviceRestApi::PostDeviceInfo(const Pistache::Rest::Request& request, Pist
             return;
         }
 
-        //TODO :: Serial_Number 积己 鞘夸
-        std::tstring serial_number;
-
         int category = db.InsertQuery(TEXT("INSERT INTO `device_category` (`name`, `agent`) values ('%s', 0) ON DUPLICATE KEY UPDATE `idx`=`idx`;"), TEXT(request_body.at("category").get_ref<const nlohmann::json::string_t&>().c_str()));
 
         if (category == -1) {
@@ -203,6 +207,18 @@ void CDeviceRestApi::PostDeviceInfo(const Pistache::Rest::Request& request, Pist
             return;
         }
 
+        //TODO :: Serial_Number 积己 鞘夸
+        std::tstring serial_number;
+
+        while (true) {
+            serial_number = Cutils::GeneratorSerialNumber();
+            MYSQL_RES* res = db.SelectQuery(TEXT("SELECT `idx` FROM `device` WHERE `serial_number` = '%s';"), TEXT(serial_number.c_str()));
+
+            if (CDatabase::GetRowList(res).size() == 0) {
+                break;
+            }
+        }
+
         int idx = db.InsertQuery(TEXT("INSERT INTO `device` (`name`, `model_name`, `serial_number`, `device_category_idx`, `network_category_idx`, `environment_idx`, `update_time`)\
                         VALUES('%s', '%s', '%s',\
                         (SELECT `idx` FROM `device_category` WHERE `name` = '%s' AND `agent` = 0),\
@@ -210,7 +226,7 @@ void CDeviceRestApi::PostDeviceInfo(const Pistache::Rest::Request& request, Pist
                         (SELECT `idx` FROM `environment` WHERE `name` = '%s'), '%s'); "),
                 TEXT(request_body.at("name").get_ref<const nlohmann::json::string_t&>().c_str()),
                 TEXT(request_body.at("model_name").get_ref<const nlohmann::json::string_t&>().c_str()),
-                TEXT(Cutils::GetTimeStamp().c_str()),
+                TEXT(serial_number.c_str()),
                 TEXT(request_body.at("category").get_ref<const nlohmann::json::string_t&>().c_str()),
                 TEXT(request_body.at("network").get_ref<const nlohmann::json::string_t&>().c_str()),
                 TEXT(request_body.at("environment").get_ref<const nlohmann::json::string_t&>().c_str()),
@@ -676,6 +692,7 @@ void CDeviceRestApi::GetDeviceUnregistedLists(const Pistache::Rest::Request& req
     int limit = 20;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("page")) {
         std::string message = request.query().get("page").value();
@@ -704,12 +721,17 @@ void CDeviceRestApi::GetDeviceUnregistedLists(const Pistache::Rest::Request& req
         return;
     }
 
-    MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', d.idx, 'name', d.NAME, 'model_number', d.model_number, 'serial_number', serial_number, 'live', IF(d.live = 1,TRUE, FALSE), 'environment', d.environment, 'network_info', JSON_EXTRACT(network_info, '$.network_info'), 'os_info', JSON_EXTRACT(os_info, '$.os_info'), 'service_list', JSON_EXTRACT(service_list, '$.service_list'), 'connect_method', JSON_EXTRACT(connect_method, '$.connect_method'))\
-            FROM device d\
-            WHERE d.device_category_idx IS NULL\
-            ORDER BY d.idx ASC LIMIT %d OFFSET %d;"),
-        limit, limit * (page - 1));
+    MYSQL_RES* res = db.SelectQuery(
+        TEXT("SELECT JSON_OBJECT('idx', `device`.`idx`, 'name', `device`.`name` ,'model_name', `device`.`model_name`, 'serial_number', `device`.`serial_number`,\
+            'environment', `environment`.`name`, 'category', `device_category`.`name`, 'network', `network_category`.`name`,\
+            'live', IF(`device`.`live` = 1, TRUE, FALSE), 'update_time', `device`.`update_time`)\
+            FROM `device`\
+            LEFT JOIN `device_category` ON `device_category`.`idx` = `device`.`device_category_idx`\
+            LEFT JOIN `network_category` ON `network_category`.`idx` = `device`.`network_category_idx`\
+            LEFT JOIN `environment` ON `environment`.`idx` = `device`.`environment_idx`\
+            WHERE `device`.`live` = 0\
+            ORDER BY `device`.`idx` ASC LIMIT %d OFFSET %d;"),
+            limit, limit * (page - 1));
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";

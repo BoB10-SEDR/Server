@@ -22,6 +22,7 @@ void CMonitoringRestApi::GetProcessLists(const Pistache::Rest::Request& request,
     int limit = 20;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("page")) {
         std::string message = request.query().get("page").value();
@@ -61,7 +62,7 @@ void CMonitoringRestApi::GetProcessLists(const Pistache::Rest::Request& request,
         return;
     }
 
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT JSON_OBJECT('idx', idx, 'pid', pid, 'ppid', ppid, 'state', state, 'command', command, 'start_time', start_time, 'update_time', update_time)\
             FROM process WHERE device_idx = %d\
             ORDER BY idx ASC LIMIT %d OFFSET %d;"),
@@ -96,6 +97,7 @@ void CMonitoringRestApi::GetFileDescriptorLists(const Pistache::Rest::Request& r
     int limit = 20;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("page")) {
         std::string message = request.query().get("page").value();
@@ -146,7 +148,7 @@ void CMonitoringRestApi::GetFileDescriptorLists(const Pistache::Rest::Request& r
         return;
     }
 
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT JSON_OBJECT('idx', idx, 'pid', pid,  'name', name, 'path', path)\
             FROM file_descriptor WHERE device_idx = %d AND pid = %d\
             ORDER BY idx ASC LIMIT %d OFFSET %d;"),
@@ -177,6 +179,7 @@ void CMonitoringRestApi::PostMonitoringActivate(const Pistache::Rest::Request& r
     try {
         nlohmann::json request_body = nlohmann::json::parse(request.body());
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
         bool error = false;
         int idx = -1;
@@ -212,7 +215,7 @@ void CMonitoringRestApi::PostMonitoringActivate(const Pistache::Rest::Request& r
         std::tstring path = request_body.at("path").get_ref<const nlohmann::json::string_t&>();
         std::tstring processName = request_body.at("process_name").get_ref<const nlohmann::json::string_t&>();
 
-        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT socket FROM device WHERE idx = %d;"), idx);
+        MYSQL_RES* res = db.SelectQuery(TEXT("SELECT socket FROM device WHERE idx = %d;"), idx);
         int agentSocket = 0;
 
         if (res == NULL) {
@@ -241,7 +244,7 @@ void CMonitoringRestApi::PostMonitoringActivate(const Pistache::Rest::Request& r
             return;
         }
 
-        int monitoringIdx = dbcon.InsertQuery(TEXT("INSERT INTO monitoring(process_name, log_path, activate, device_idx, update_time) Values('%s', '%s', %d, %d, '%s') ON DUPLICATE KEY UPDATE activate = %d, update_time = '%s';"),
+        int monitoringIdx = db.InsertQuery(TEXT("INSERT INTO monitoring(process_name, log_path, activate, device_idx, update_time) Values('%s', '%s', %d, %d, '%s') ON DUPLICATE KEY UPDATE activate = %d, update_time = '%s';"),
             TEXT(processName.c_str()), TEXT(path.c_str()), 1, idx, TEXT(Cutils::GetTimeStamp().c_str()), 1, TEXT(Cutils::GetTimeStamp().c_str()));
 
         if (monitoringIdx == -1) {
@@ -279,6 +282,7 @@ void CMonitoringRestApi::PostMonitoringInactivate(const Pistache::Rest::Request&
     try {
         nlohmann::json request_body = nlohmann::json::parse(request.body());
         nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+        CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
         bool error = false;
         int idx = -1;
@@ -314,7 +318,7 @@ void CMonitoringRestApi::PostMonitoringInactivate(const Pistache::Rest::Request&
         std::tstring path = request_body.at("path").get_ref<const nlohmann::json::string_t&>();
         std::tstring processName = request_body.at("process_name").get_ref<const nlohmann::json::string_t&>();
 
-        MYSQL_RES* res = dbcon.SelectQuery(TEXT("SELECT socket FROM device WHERE idx = %d;"), idx);
+        MYSQL_RES* res = db.SelectQuery(TEXT("SELECT socket FROM device WHERE idx = %d;"), idx);
         int agentSocket = 0;
 
         if (res == NULL) {
@@ -343,7 +347,7 @@ void CMonitoringRestApi::PostMonitoringInactivate(const Pistache::Rest::Request&
             return;
         }
 
-        int monitoringIdx = dbcon.InsertQuery(TEXT("INSERT INTO monitoring(process_name, log_path, activate, device_idx, update_time) Values('%s', '%s', %d, %d, '%s') ON DUPLICATE KEY UPDATE activate = %d, update_time = '%s';"),
+        int monitoringIdx = db.InsertQuery(TEXT("INSERT INTO monitoring(process_name, log_path, activate, device_idx, update_time) Values('%s', '%s', %d, %d, '%s') ON DUPLICATE KEY UPDATE activate = %d, update_time = '%s';"),
             TEXT(processName.c_str()), TEXT(path.c_str()), 0, idx, TEXT(Cutils::GetTimeStamp().c_str()), 0, TEXT(Cutils::GetTimeStamp().c_str()));
 
         if (monitoringIdx == -1) {
