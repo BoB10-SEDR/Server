@@ -35,6 +35,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
     bool error = false; 
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("start")) {
         std::string message = request.query().get("start").value();
@@ -66,7 +67,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
     std::map<std::tstring, std::tstring> status = {{"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"}};
 
     // 현재시간 까지 로그 통계 구하기
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
             TEXT("SELECT status, Count(*) AS count\
                 FROM log\
                 WHERE TIMESTAMP('%s') <= TIMESTAMP(create_time) AND TIMESTAMP(create_time) <= TIMESTAMPADD(MINUTE, %d, '%s')\
@@ -98,7 +99,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
     }
 
     // time전 로그 통계 구하기
-    res = dbcon.SelectQuery(
+    res = db.SelectQuery(
         TEXT("SELECT status, Count(*) AS count\
                 FROM log\
                 WHERE TIMESTAMP('%s') <= TIMESTAMP(create_time) AND TIMESTAMP(create_time) <= TIMESTAMPADD(MINUTE, %d, '%s')\
@@ -128,7 +129,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
     }
 
     // 공격로그 통계
-    res = dbcon.SelectQuery(
+    res = db.SelectQuery(
     TEXT("SELECT COUNT(*) AS type, SUM(attack) AS total_attack\
         FROM(SELECT security_category_idx, COUNT(*) AS attack\
             FROM log\
@@ -155,7 +156,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
 
 
     // 공격로그 time 시간 전 통계
-    res = dbcon.SelectQuery(
+    res = db.SelectQuery(
         TEXT("SELECT COUNT(*) AS type, SUM(attack) AS total_attack\
         FROM(SELECT security_category_idx, COUNT(*) AS attack\
             FROM log\
@@ -180,7 +181,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
     result["attack_change_rate"] = result["attack_change"].get_ref<const nlohmann::json::number_integer_t&>() * 100 / result["attack"].get_ref<const nlohmann::json::number_integer_t&>();
 
     //장비 카테고리 수, 장비 수
-    res = dbcon.SelectQuery(
+    res = db.SelectQuery(
         TEXT("SELECT COUNT(*) AS type, SUM(a.count) AS devices\
             FROM(\
                 SELECT COUNT(*) AS count, device_category_idx FROM device\
@@ -202,7 +203,7 @@ void CDashBoardRestApi::GetDashBoardStatisticsRestApi(const Pistache::Rest::Requ
     }
 
     //모듈 카테고리 수, 모듈 수
-    res = dbcon.SelectQuery(
+    res = db.SelectQuery(
         TEXT("SELECT COUNT(*) AS type, SUM(a.count) AS modules\
             FROM(\
                 SELECT COUNT(*) AS count, module_category_idx  FROM module\
@@ -241,6 +242,7 @@ void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request
     bool error = false;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("start")) {
         std::string message = request.query().get("start").value();
@@ -272,7 +274,7 @@ void CDashBoardRestApi::GetDashBoardLogTimeRestApi(const Pistache::Rest::Request
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };
 
     // 현재시간 까지 로그 통계 구하기
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT a.basis_date, CONCAT('[', GROUP_CONCAT(JSON_OBJECT(a.status, a.avg_col)),']'), SUM(a.avg_col) AS SUM\
             FROM(\
                 SELECT TIMESTAMPADD(MINUTE, FLOOR(TIMESTAMPDIFF(MINUTE, '%s', create_time) / %d) * %d, '%s')  AS basis_date\
@@ -323,6 +325,7 @@ void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Reque
     bool error = false;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("start")) {
         std::string message = request.query().get("start").value();
@@ -343,7 +346,7 @@ void CDashBoardRestApi::GetDashBoardLogAttackRestApi(const Pistache::Rest::Reque
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };
 
     // 현재시간 까지 로그 통계 구하기
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT JSON_OBJECT('main', a.main, 'sub', a.sub , 'count', a.log_count , 'percent', a.log_percent * 100)\
             FROM\
             (SELECT sc.main, sc.sub, COUNT(*) AS log_count, COUNT(*) / (SELECT COUNT(*) FROM log WHERE security_category_idx IS NOT NULL) AS log_percent\
@@ -383,6 +386,7 @@ void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::R
     bool error = false;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("start")) {
         std::string message = request.query().get("start").value();
@@ -414,7 +418,7 @@ void CDashBoardRestApi::GetDashBoardLogAttackTimeRestApi(const Pistache::Rest::R
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };
 
     // 현재시간 까지 로그 통계 구하기
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT a.basis_date, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('main', s.main, 'sub', s.sub, 'count', a.col)) ,']'), SUM(a.col) AS SUM\
             FROM(\
                 SELECT TIMESTAMPADD(MINUTE, FLOOR(TIMESTAMPDIFF(MINUTE, '%s', create_time) / %d) * %d, '%s')  AS basis_date\
@@ -461,6 +465,7 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
     bool error = false;
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     if (request.query().has("start")) {
         std::string message = request.query().get("start").value();
@@ -481,7 +486,7 @@ void CDashBoardRestApi::GetDashBoardLogGroupRestApi(const Pistache::Rest::Reques
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };
 
     // 현재시간 까지 로그 통계 구하기
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT environment, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('status', STATUS, 'count', avg_col)) ,']')\
             FROM(\
                 SELECT Count(*) AS avg_col, STATUS, d.environment\
@@ -524,9 +529,10 @@ void CDashBoardRestApi::GetDashBoardPolicyRestApi(const Pistache::Rest::Request&
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
     std::map<std::tstring, std::tstring> status = { {"INFO", "info"},{"THREAT", "threat"}, {"FAIL", "fail"} };
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     // 현재시간 까지 로그 통계 구하기
-    MYSQL_RES* res = dbcon.SelectQuery(
+    MYSQL_RES* res = db.SelectQuery(
         TEXT("SELECT JSON_OBJECT('idx', a.idx, 'main', a.main, 'sub', a.sub, 'classify', a.classify, 'name', a.name, 'description', a.description, 'recommand', a.recommand, 'activate', a.activate, 'recommand_devices', JSON_EXTRACT(a.recommand_devices, '$'), 'activate_devices', JSON_EXTRACT(a.activate_devices, '$'))\
             FROM(\
                 SELECT sc.main, sc.sub, p.idx, p.name, p.classify, p.description,\

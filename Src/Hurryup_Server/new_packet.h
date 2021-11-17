@@ -300,3 +300,117 @@ struct ST_NEW_POLICY_INFO : public core::IFormatterObject
 			;
 	}
 };
+
+struct ST_NEW_PROCESS_INFO : public core::IFormatterObject
+{
+	int pid;
+	int ppid;
+	std::tstring name;
+	std::tstring state;
+	std::tstring cmdline;
+	std::tstring startTime;
+
+	ST_NEW_PROCESS_INFO(void)
+	{}
+	ST_NEW_PROCESS_INFO(int _pid, int _ppid, std::tstring _name, std::tstring _state, std::tstring _cmdline, std::tstring _startTime)
+		: pid(_pid), ppid(_ppid), name(_name), state(_state), cmdline(_cmdline), startTime(_startTime)
+	{}
+
+	void OnSync(core::IFormatter& formatter)
+	{
+		formatter
+			+ core::sPair(TEXT("Pid"), pid)
+			+ core::sPair(TEXT("PPid"), ppid)
+			+ core::sPair(TEXT("Name"), name)
+			+ core::sPair(TEXT("State"), state)
+			+ core::sPair(TEXT("Cmdline"), cmdline)
+			+ core::sPair(TEXT("StartTime"), startTime)
+			;
+	}
+};
+
+struct ST_NEW_FD_INFO : public core::IFormatterObject
+{
+	int pid;
+	std::string fdName;
+	std::string realPath;
+
+	ST_NEW_FD_INFO(void)
+	{}
+	ST_NEW_FD_INFO(int _pid, std::string _fdName, std::string _realPath)
+		: pid(_pid), fdName(_fdName), realPath(_realPath)
+	{}
+
+	void OnSync(core::IFormatter& formatter)
+	{
+		formatter
+			+ core::sPair(TEXT("Pid"), pid)
+			+ core::sPair(TEXT("FdName"), fdName)
+			+ core::sPair(TEXT("ReadPath"), realPath)
+			;
+	}
+};
+
+struct ST_NEW_MONITOR_TARGET : public core::IFormatterObject
+{
+	std::string processName;
+	std::string logPath;
+
+	ST_NEW_MONITOR_TARGET(void)
+	{}
+	ST_NEW_MONITOR_TARGET(std::string _processName, std::string _logPath)
+		: processName(_processName), logPath(_logPath)
+	{}
+
+	void OnSync(core::IFormatter& formatter)
+	{
+		formatter
+			+ core::sPair(TEXT("ProcessName"), processName)
+			+ core::sPair(TEXT("LogPath"), logPath)
+			;
+	}
+};
+
+struct ST_NEW_MONITOR_RESULT : public core::IFormatterObject
+{
+	std::string processName;
+	std::tstring logPath;
+	bool result;
+
+	ST_NEW_MONITOR_RESULT(void)
+	{}
+	ST_NEW_MONITOR_RESULT(std::string _processName, std::tstring _logPath, bool _result)
+		: processName(_processName), logPath(_logPath), result(_result)
+	{}
+
+	void OnSync(core::IFormatter& formatter)
+	{
+		formatter
+			+ core::sPair(TEXT("ProcessName"), processName)
+			+ core::sPair(TEXT("LogPath"), logPath)
+			+ core::sPair(TEXT("Result"), result)
+			;
+	}
+};
+
+struct ST_NEW_MONITOR_INFO : public core::IFormatterObject
+{
+	std::string processName;
+	std::string logPath;
+	std::string changeData;
+
+	ST_NEW_MONITOR_INFO(void)
+	{}
+	ST_NEW_MONITOR_INFO(std::string _processName, std::string _logPath, std::string _changeData)
+		: processName(_processName), logPath(_logPath), changeData(_changeData)
+	{}
+
+	void OnSync(core::IFormatter& formatter)
+	{
+		formatter
+			+ core::sPair(TEXT("ProcessName"), processName)
+			+ core::sPair(TEXT("LogPath"), logPath)
+			+ core::sPair(TEXT("ChangeData"), changeData)
+			;
+	}
+};

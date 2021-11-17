@@ -37,7 +37,8 @@ void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
 {
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response Process List"), agentFd);
 
-	ST_PROCESS_LIST processList;
+	ST_NEW_VECTOR_DATABASE<ST_NEW_PROCESS_INFO> processList;
+	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
 	core::ReadJsonFromString(&processList, data);
 
@@ -49,17 +50,17 @@ void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
 		return;
 	}
 
-	dbcon.DeleteQuery(TEXT("DELETE FROM bob10_sedr.process WHERE device_idx = %d;"), deviceId);
+	db.DeleteQuery(TEXT("DELETE FROM bob10_sedr.process WHERE device_idx = %d;"), deviceId);
 	
-	if (dbcon.GetLastError() == NULL)
+	if (db.GetLastError() == NULL)
 	{
 		core::Log_Error(TEXT("CAgentApi.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
 		return;
 	}
 
-	for (auto i : processList.processLists)
+	for (auto i : processList.metaInfo)
 	{
-		dbcon.InsertQuery(TEXT("Insert into bob10_sedr.process(pid, ppid, name, state, command, start_time, update_time, device_idx) values (%d, %d,'%s','%s','%s','%s', '%s', %d);"), i.pid, i.ppid, TEXT(i.name.c_str()), TEXT(i.state.c_str()), TEXT(i.cmdline.c_str()), TEXT(i.startTime.c_str()), TEXT(Cutils::GetTimeStamp().c_str()), deviceId);
+		db.InsertQuery(TEXT("Insert into bob10_sedr.process(pid, ppid, name, state, command, start_time, update_time, device_idx) values (%d, %d,'%s','%s','%s','%s', '%s', %d);"), i.pid, i.ppid, TEXT(i.name.c_str()), TEXT(i.state.c_str()), TEXT(i.cmdline.c_str()), TEXT(i.startTime.c_str()), TEXT(Cutils::GetTimeStamp().c_str()), deviceId);
 		if (dbcon.GetLastError() == NULL)
 		{
 			core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
@@ -75,14 +76,16 @@ void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
 
 	core::Log_Debug(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), deviceId, TEXT(data.c_str()));
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response Process List Complete"), deviceId);
-
 }
+
 void CAgentApi::ResponseFileDescriptorList(int agentFd, std::tstring data)
 {
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response Process File Descriptor List"), agentFd);
 
-	ST_FD_LIST fdLIST;
-	core::ReadJsonFromString(&fdLIST, data);
+	ST_NEW_VECTOR_DATABASE<ST_NEW_FD_INFO> fdList;
+	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
+
+	core::ReadJsonFromString(&fdList, data);
 
 	int deviceId = GetDeviceId(agentFd);
 
@@ -92,22 +95,21 @@ void CAgentApi::ResponseFileDescriptorList(int agentFd, std::tstring data)
 		return;
 	}
 
-	dbcon.DeleteQuery(TEXT("DELETE FROM bob10_sedr.file_descriptor WHERE device_idx = %d and pid = %d;"), deviceId, fdLIST.pid);
+	db.DeleteQuery(TEXT("DELETE FROM bob10_sedr.file_descriptor WHERE device_idx = %d and pid = %d;"), deviceId, fdList.metaInfo[0].pid);
 
-	if (dbcon.GetLastError() == NULL)
+	if (db.GetLastError() == NULL)
 	{
-		core::Log_Error(TEXT("CAgentApi.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
+		core::Log_Error(TEXT("CAgentApi.cpp - [%s] %s"), TEXT("Database Error"), TEXT(db.GetLastError()));
 		return;
 	}
 
-	core::Log_Debug(TEXT("CAgentApi.cpp - [PID] : %d"), fdLIST.pid);
-	for (auto i : fdLIST.fdLists)
+	for (auto i : fdList.metaInfo)
 	{
-		dbcon.InsertQuery(TEXT("Insert into bob10_sedr.file_descriptor(pid, name, path, device_idx, update_time) values (%d,'%s','%s', %d, '%s');"), i.pid, TEXT(i.fdName.c_str()), TEXT(i.realPath.c_str()), deviceId, TEXT(Cutils::GetTimeStamp().c_str()));
+		db.InsertQuery(TEXT("Insert into bob10_sedr.file_descriptor(pid, name, path, device_idx, update_time) values (%d,'%s','%s', %d, '%s');"), i.pid, TEXT(i.fdName.c_str()), TEXT(i.realPath.c_str()), deviceId, TEXT(Cutils::GetTimeStamp().c_str()));
 
-		if (dbcon.GetLastError() == NULL)
+		if (db.GetLastError() == NULL)
 		{
-			core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
+			core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(db.GetLastError()));
 			return;
 		}
 		core::Log_Debug(TEXT("CAgentApi.cpp - [PID] : %d"), i.pid);
@@ -119,11 +121,14 @@ void CAgentApi::ResponseFileDescriptorList(int agentFd, std::tstring data)
 	core::Log_Debug(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response Process File Descriptor Complete"), agentFd);
 }
+
 void CAgentApi::ResponseMonitoringResult(int agentFd, std::tstring data)
 {
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Response Monitoring Result"), agentFd, TEXT(data.c_str()));
 
-	ST_MONITOR_RESULT monitorResult;
+	ST_NEW_MONITOR_RESULT monitorResult;
+	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
+
 	core::ReadJsonFromString(&monitorResult, data);
 
 	int deviceId = GetDeviceId(agentFd);
@@ -134,10 +139,10 @@ void CAgentApi::ResponseMonitoringResult(int agentFd, std::tstring data)
 		return;
 	}
 
-	dbcon.InsertQuery(TEXT("INSERT INTO monitoring (process_name, log_path, activate, device_idx, update_time) VALUES('%s', '%s', %d, %d, '%s') ON DUPLICATE KEY UPDATE activate = %d, update_time = '%s';"),
+	db.InsertQuery(TEXT("INSERT INTO monitoring (process_name, log_path, activate, device_idx, update_time) VALUES('%s', '%s', %d, %d, '%s') ON DUPLICATE KEY UPDATE activate = %d, update_time = '%s';"),
 		TEXT(monitorResult.processName.c_str()), TEXT(monitorResult.logPath.c_str()), monitorResult.result, deviceId, TEXT(Cutils::GetTimeStamp().c_str()), monitorResult.result, TEXT(Cutils::GetTimeStamp().c_str()));
 
-	if (dbcon.GetLastError() == NULL)
+	if (db.GetLastError() == NULL)
 	{
 		core::Log_Error(TEXT("CAgentApi.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
 		return;
@@ -147,9 +152,15 @@ void CAgentApi::ResponseMonitoringResult(int agentFd, std::tstring data)
 	core::Log_Debug(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response Monitoring Result Complete"), agentFd);
 }
+
 void CAgentApi::ResponseMonitoringLog(int agentFd, std::tstring data)
 {
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Request Monitoring Info"), agentFd, TEXT(data.c_str()));
+
+	ST_NEW_MONITOR_INFO monitorInfo;
+	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
+
+	core::ReadJsonFromString(&monitorInfo, data);
 
 	int deviceId = GetDeviceId(agentFd);
 
@@ -173,6 +184,7 @@ void CAgentApi::ResponseMonitoringLog(int agentFd, std::tstring data)
 	core::Log_Debug(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Save DataBase"), agentFd, TEXT(data.c_str()));
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Request Monitoring Info Complete"), agentFd);
 }
+
 void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 {
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d] : %s"), TEXT("Response Device Info"), agentFd, TEXT(data.c_str()));
@@ -235,6 +247,7 @@ void CAgentApi::ResponseDeviceDead(int agentFd, std::tstring data)
 	core::Log_Debug(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Save DataBase"), agentFd);
 	core::Log_Info(TEXT("CAgentApi.cpp - [%s-%d]"), TEXT("Response UpdateDeviceLive Complete"), agentFd);
 }
+
 void CAgentApi::ResponseModuleInfo(int agentFd, std::tstring data)
 {
 	
