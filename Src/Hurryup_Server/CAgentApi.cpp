@@ -5,7 +5,7 @@ int CAgentApi::GetDeviceId(int agentFd)
 {
 	int deviceId = -1;
 
-	MYSQL_RES* res = this->dbcon.SelectQuery(TEXT("SELECT idx FROM bob10_sedr.device WHERE socket=%d;"), agentFd);
+	MYSQL_RES* res = this->dbcon.SelectQuery(TEXT("SELECT idx FROM device WHERE socket=%d;"), agentFd);
 
 	if (dbcon.GetLastError() == NULL)
 	{
@@ -39,6 +39,7 @@ void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
 
 	ST_NEW_VECTOR_DATABASE<ST_NEW_PROCESS_INFO> processList;
 	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
+	processList.key = TEXT("MetaInfo");
 
 	core::ReadJsonFromString(&processList, data);
 
@@ -50,7 +51,7 @@ void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
 		return;
 	}
 
-	db.DeleteQuery(TEXT("DELETE FROM bob10_sedr.process WHERE device_idx = %d;"), deviceId);
+	db.DeleteQuery(TEXT("DELETE FROM process WHERE device_idx = %d;"), deviceId);
 	
 	if (db.GetLastError() == NULL)
 	{
@@ -60,7 +61,7 @@ void CAgentApi::ResponseProcessList(int agentFd, std::tstring data)
 
 	for (auto i : processList.metaInfo)
 	{
-		db.InsertQuery(TEXT("Insert into bob10_sedr.process(pid, ppid, name, state, command, start_time, update_time, device_idx) values (%d, %d,'%s','%s','%s','%s', '%s', %d);"), i.pid, i.ppid, TEXT(i.name.c_str()), TEXT(i.state.c_str()), TEXT(i.cmdline.c_str()), TEXT(i.startTime.c_str()), TEXT(Cutils::GetTimeStamp().c_str()), deviceId);
+		db.InsertQuery(TEXT("Insert into process(pid, ppid, name, state, command, start_time, update_time, device_idx) values (%d, %d,'%s','%s','%s','%s', '%s', %d);"), i.pid, i.ppid, TEXT(i.name.c_str()), TEXT(i.state.c_str()), TEXT(i.cmdline.c_str()), TEXT(i.startTime.c_str()), TEXT(Cutils::GetTimeStamp().c_str()), deviceId);
 		if (dbcon.GetLastError() == NULL)
 		{
 			core::Log_Error(TEXT("Function.cpp - [%s] %s"), TEXT("Database Error"), TEXT(dbcon.GetLastError()));
@@ -84,6 +85,7 @@ void CAgentApi::ResponseFileDescriptorList(int agentFd, std::tstring data)
 
 	ST_NEW_VECTOR_DATABASE<ST_NEW_FD_INFO> fdList;
 	CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
+	fdList.key = TEXT("MetaInfo");
 
 	core::ReadJsonFromString(&fdList, data);
 
@@ -95,17 +97,20 @@ void CAgentApi::ResponseFileDescriptorList(int agentFd, std::tstring data)
 		return;
 	}
 
-	db.DeleteQuery(TEXT("DELETE FROM bob10_sedr.file_descriptor WHERE device_idx = %d and pid = %d;"), deviceId, fdList.metaInfo[0].pid);
-
 	if (db.GetLastError() == NULL)
 	{
 		core::Log_Error(TEXT("CAgentApi.cpp - [%s] %s"), TEXT("Database Error"), TEXT(db.GetLastError()));
 		return;
 	}
+	
+	if (fdList.metaInfo.size() == 0)
+		return;
+
+	db.DeleteQuery(TEXT("DELETE FROM file_descriptor WHERE device_idx = %d and pid = %d;"), deviceId, fdList.metaInfo[0].pid);
 
 	for (auto i : fdList.metaInfo)
 	{
-		db.InsertQuery(TEXT("Insert into bob10_sedr.file_descriptor(pid, name, path, device_idx, update_time) values (%d,'%s','%s', %d, '%s');"), i.pid, TEXT(i.fdName.c_str()), TEXT(i.realPath.c_str()), deviceId, TEXT(Cutils::GetTimeStamp().c_str()));
+		db.InsertQuery(TEXT("Insert into file_descriptor(pid, name, path, device_idx, update_time) values (%d,'%s','%s', %d, '%s');"), i.pid, TEXT(i.fdName.c_str()), TEXT(i.realPath.c_str()), deviceId, TEXT(Cutils::GetTimeStamp().c_str()));
 
 		if (db.GetLastError() == NULL)
 		{
@@ -170,8 +175,8 @@ void CAgentApi::ResponseMonitoringLog(int agentFd, std::tstring data)
 		return;
 	}
 
-	dbcon.InsertQuery(TEXT("INSERT INTO bob10_sedr.log(event_code, description, device_idx, original_log, create_time, environment, status, layer)\
-						VALUES ('%s', '%s', %d, '%s', '%s', '%s', '%s, '%s);"),
+	dbcon.InsertQuery(TEXT("INSERT INTO log(event_code, description, device_idx, original_log, create_time, environment, status, layer)\
+						VALUES ('%s', '%s', %d, '%s', '%s', '%s', '%s, '%s');"),
 						TEXT("E-Montoring"), TEXT("모니터링 로그 데이터 입니다."), deviceId, TEXT(data.c_str()), TEXT(Cutils::GetTimeStamp().c_str()), TEXT("Agent"), TEXT("INFO"), TEXT("Device"));
 
 	if (dbcon.GetLastError() == NULL)
@@ -214,7 +219,7 @@ void CAgentApi::ResponseDeviceInfo(int agentFd, std::tstring data)
 		TEXT(servceList.c_str()),
 		TEXT(info.metaInfo.connectMethod.c_str()),
 		agentFd,
-		TEXT(info.timestamp.c_str()),
+		TEXT(Cutils::GetTimeStamp().c_str()),
 		TEXT(info.serialNumber.c_str())
 	);
 

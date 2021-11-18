@@ -76,6 +76,7 @@ bool CDatabase::UpdateQuery(const std::tstring sql_query, ...)
     va_end(ap);
 
     core::Log_Debug(TEXT("CDatabase.cpp - [%s] : %s"), TEXT("Mysql Update Query"), TEXT(buf));
+    std::cout << buf << std::endl;
 
     if (mysql_query(this->m_conn, buf))
     {
