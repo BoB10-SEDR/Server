@@ -10,6 +10,8 @@ CDatabase::CDatabase(const std::tstring& address, const std::tstring& user, cons
 
     this->m_conn = mysql_init(NULL);
 
+    mysql_options(this->m_conn, MYSQL_OPT_RECONNECT, new bool(true));
+
     if (!mysql_real_connect(this->m_conn, this->m_address.c_str(), this->m_user.c_str(), this->m_password.c_str(), this->m_database.c_str(), atoi(this->m_port.c_str()), NULL, 0))
     {
         core::Log_Error(TEXT("CDatabase.cpp - [%s] : %s"), TEXT("Connection Error"), TEXT(mysql_error(this->m_conn)));
@@ -54,7 +56,7 @@ int CDatabase::InsertQuery(const std::tstring sql_query, ...)
 
     if (mysql_query(this->m_conn, buf))
     {
-        core::Log_Error(TEXT("CDatabase.cpp - [%s] : %s -> %s"), TEXT("Mysql Query Error"), TEXT(buf), TEXT(mysql_error(this->m_conn)));
+        core::Log_Error(TEXT("CDatabase.cpp - [%s] : %s -> %s"), TEXT("Mysql Query Error"), TEXT(""), TEXT(mysql_error(this->m_conn)));
         return -1;
     }
 
@@ -74,6 +76,7 @@ bool CDatabase::UpdateQuery(const std::tstring sql_query, ...)
     va_end(ap);
 
     core::Log_Debug(TEXT("CDatabase.cpp - [%s] : %s"), TEXT("Mysql Update Query"), TEXT(buf));
+    std::cout << buf << std::endl;
 
     if (mysql_query(this->m_conn, buf))
     {
@@ -140,6 +143,20 @@ MYSQL_RES* CDatabase::SelectQuery(std::tstring sql_query, ...)
     va_end(ap);
 
     core::Log_Debug(TEXT("CDatabase.cpp - [%s] : %s"), TEXT("Mysql Select Query"), TEXT(buf));
+    
+    //while (mysql_ping(this->m_conn)) {
+    //    core::Log_Debug(TEXT("CDatabase.cpp - [%s] : %d"), TEXT("mysql_ping"), mysql_ping(this->m_conn));
+    //    mysql_close(this->m_conn);
+
+    //    this->m_conn = mysql_init(NULL);
+
+    //    mysql_options(this->m_conn, MYSQL_OPT_RECONNECT, new bool(true));
+    //    
+    //    if (!mysql_real_connect(this->m_conn, this->m_address.c_str(), this->m_user.c_str(), this->m_password.c_str(), this->m_database.c_str(), atoi(this->m_port.c_str()), NULL, 0))
+    //    {
+    //        core::Log_Error(TEXT("CDatabase.cpp - [%s] : %s"), TEXT("Connection Error"), TEXT(mysql_error(this->m_conn)));
+    //    }
+    //}
 
     if (mysql_query(this->m_conn, buf))
     {

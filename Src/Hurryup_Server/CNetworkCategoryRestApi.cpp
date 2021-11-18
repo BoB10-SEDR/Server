@@ -17,41 +17,11 @@ void CNetworkCategoryRestApi::GetNetworkCategoryLists(const Pistache::Rest::Requ
     response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
 
     bool error = false;
-    int page = 1;
-    int limit = 20;
+    CDatabase db("192.168.181.134", "bob", "bob10-sedr12!@", "3306", "hurryup_sedr");
 
     nlohmann::json jsonMessage = { {"message", ""}, {"errors", nlohmann::json::array()}, {"outputs", nlohmann::json::array()} };
 
-    if (request.query().has("page")) {
-        std::string message = request.query().get("page").value();
-        if (std::regex_match(message, regexNumber))
-            page = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "page must be number."} });
-            error = true;
-        }
-    }
-
-    if (request.query().has("limit")) {
-        std::string message = request.query().get("limit").value();
-        if (std::regex_match(message, regexLimit))
-            limit = atoi(message.c_str());
-        else {
-            jsonMessage["message"] = "Error";
-            jsonMessage["errors"].push_back({ {"Parameter Errors", "limit must be 2 digits number."} });
-            error = true;
-        }
-    }
-
-    if (error) {
-        response.send(Pistache::Http::Code::Bad_Request, jsonMessage.dump(), Pistache::Http::Mime::MediaType::fromString("application/json"));
-        return;
-    }
-
-    MYSQL_RES* res = dbcon.SelectQuery(
-        TEXT("SELECT JSON_OBJECT('idx', idx, 'name', name) FROM network_category ORDER BY idx ASC LIMIT %d OFFSET %d;"),
-        limit, limit * (page - 1));
+    MYSQL_RES* res = db.SelectQuery(TEXT("SELECT JSON_OBJECT('idx', idx, 'name', name) FROM `network_category` ORDER BY `idx` ASC;"));
 
     if (res == NULL) {
         jsonMessage["message"] = "Error";

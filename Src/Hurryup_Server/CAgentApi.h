@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Cutils.h"
 #include "CApi.h"
 
 class CAgentApi : public::CApi<std::map<OPCODE, void(CAgentApi::*)(int, std::tstring)>>
@@ -15,7 +16,6 @@ public:
 	void ResponseModuleInfo(int agentFd, std::tstring data);
 	void ResponsePolicyResult(int agentFd, std::tstring data);
 	void ResponseCheckResult(int agentFd, std::tstring data);
-	std::string GetTimeStamp();
 	int GetDeviceId(int agentFd);
 private:
 
@@ -28,8 +28,8 @@ inline void TestResponseProcessList()
 	CAgentApi agentApi;
 
 	ST_PROCESS_LIST processList;
-	processList.processLists.push_back(ST_PROCESS_INFO(2, 1, "process1", "sleep", "/process1", agentApi.GetTimeStamp().c_str()));
-	processList.processLists.push_back(ST_PROCESS_INFO(3, 1, "process2", "zombee", "/process2", agentApi.GetTimeStamp().c_str()));
+	processList.processLists.push_back(ST_PROCESS_INFO(2, 1, "process1", "sleep", "/process1", Cutils::GetTimeStamp().c_str()));
+	processList.processLists.push_back(ST_PROCESS_INFO(3, 1, "process2", "zombee", "/process2", Cutils::GetTimeStamp().c_str()));
 
 	std::tstring jsTestData;
 	core::WriteJsonToString(&processList, jsTestData);
